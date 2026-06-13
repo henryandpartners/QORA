@@ -1,0 +1,108 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#050510;
+  overflow:hidden;
+  font-family:'Inter',sans-serif;
+  color:rgba(255,255,255,0.6);
+}
+
+canvas{display:block}
+
+/* Vignette overlay */
+#overlay{
+  position:fixed;top:0;left:0;
+  width:100%;height:100%;
+  pointer-events:none;z-index:10;
+  background:radial-gradient(circle at 50% 50%,
+    transparent 0%,
+    rgba(5,5,16,0.5) 50%,
+    rgba(5,5,16,0.85) 100%
+  );
+}
+
+/* Title */
+#label{
+  position:fixed;top:28px;left:28px;
+  z-index:20;
+  font-size:13px;
+  letter-spacing:2px;
+  color:rgba(255,255,255,0.45);
+  font-family:'Space Mono',monospace;
+}
+#label span{color:#7b61ff;font-weight:700}
+
+/* Mode display */
+#mode-display{
+  position:fixed;top:28px;left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+  text-align:center;
+}
+#mode-label{
+  font-family:'Space Mono',monospace;
+  font-size:14px;
+  letter-spacing:3px;
+  color:#00e5a0;
+  font-weight:700;
+  transition:color 0.5s ease;
+}
+#mode-label.mode-exciton{color:#7b61ff}
+#mode-label.mode-deco{color:#ff6b35}
+#mode-desc{
+  font-size:10px;
+  letter-spacing:1px;
+  color:rgba(255,255,255,0.3);
+  margin-top:4px;
+}
+
+/* Coherence meter */
+#coherence-meter{
+  position:fixed;top:28px;right:28px;
+  z-index:20;
+  text-align:right;
+}
+#coherence-label{
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  letter-spacing:2px;
+  color:rgba(255,255,255,0.5);
+}
+#coherence-value{color:#00e5a0;transition:color 0.3s ease}
+#coherence-bar{
+  width:180px;height:3px;
+  background:rgba(255,255,255,0.08);
+  border-radius:2px;margin-top:6px;overflow:hidden
+}
+#coherence-fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,#7b61ff,#00e5a0);
+  border-radius:2px;
+  transition:width 0.15s ease-out;
+}
+#coherence-sub{
+  font-size:9px;letter-spacing:1px;
+  color:rgba(255,255,255,0.2);
+  margin-top:4px;
+  font-family:'Space Mono',monospace;
+}
+
+/* Controls hint */
+#controls-hint{
+  position:fixed;bottom:28px;left:28px;
+  z-index:20;
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:rgba(255,255,255,0.2);
+  line-height:1.8;
+  font-family:'Space Mono',monospace;
+  transition:opacity 2s ease;
+}
+
+/* Responsive */
+@media(max-width:768px){
+  #label{top:16px;left:16px;font-size:11px}
+  #mode-display{top:16px;font-size:12px}
+  #coherence-meter{top:16px;right:16px}
+  #coherence-bar{width:120px}
+  #controls-hint{bottom:16px;left:16px;font-size:9px}
+}

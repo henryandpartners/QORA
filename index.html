@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QORA — Quantum Organic Resonance Architecture</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="overlay"></div>
+
+<div id="label">
+  <span>QORA</span> — Quantum Organic Resonance Architecture
+</div>
+
+<div id="mode-display">
+  <span id="mode-label">COHERENCE</span>
+  <div id="mode-desc">Exciton transport through FMO scaffold</div>
+</div>
+
+<div id="coherence-meter">
+  <div id="coherence-label">COHERENCE <span id="coherence-value">100%</span></div>
+  <div id="coherence-bar"><div id="coherence-fill"></div></div>
+  <div id="coherence-sub">ρ(t) = |ψ⟩⟨ψ|</div>
+</div>
+
+<div id="controls-hint">
+  <div>MOUSE — Observe (decohere)</div>
+  <div>SCROLL — Zoom</div>
+  <div>1/2/3 — Modes</div>
+  <div>SPACE — Reset</div>
+  <div>F — Fullscreen</div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
