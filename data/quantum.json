@@ -1,0 +1,161 @@
+{
+  "run_id": "20260825_164410",
+  "timestamp": "2026-08-25 16:44",
+  "shots": 1024,
+  "unique_states": 64,
+  "entropy": 5.9568,
+  "max_entropy": 6.0,
+  "entropy_ratio": 0.9928,
+  "collision_entropy": 5.9119,
+  "kl_div": 0.0432,
+  "tvd": 0.0996,
+  "avg_mi": 0.0007,
+  "overlap": 0.992619,
+  "fs_distance_rad": 0.1216,
+  "fs_distance_deg": 6.97,
+  "spectral_gap": 0.0186,
+  "mean_amplitude": 0.1241,
+  "amplitude_variance": 0.00023,
+  "ideal_amplitude": 0.125,
+  "qubit_marginals": [
+    0.5039,
+    0.4785,
+    0.4707,
+    0.5156,
+    0.5078,
+    0.5117
+  ],
+  "qubit_deviations": [
+    0.0039,
+    -0.0215,
+    -0.0293,
+    0.0156,
+    0.0078,
+    0.0117
+  ],
+  "top_states": [
+    {
+      "state": "110110",
+      "count": 29,
+      "p": 0.0283
+    },
+    {
+      "state": "000000",
+      "count": 27,
+      "p": 0.0264
+    },
+    {
+      "state": "000111",
+      "count": 23,
+      "p": 0.0225
+    },
+    {
+      "state": "010101",
+      "count": 23,
+      "p": 0.0225
+    },
+    {
+      "state": "110001",
+      "count": 23,
+      "p": 0.0225
+    },
+    {
+      "state": "001011",
+      "count": 22,
+      "p": 0.0215
+    },
+    {
+      "state": "100111",
+      "count": 21,
+      "p": 0.0205
+    },
+    {
+      "state": "001001",
+      "count": 21,
+      "p": 0.0205
+    },
+    {
+      "state": "101111",
+      "count": 21,
+      "p": 0.0205
+    },
+    {
+      "state": "100100",
+      "count": 20,
+      "p": 0.0195
+    }
+  ],
+  "counts": {
+    "000000": 27,
+    "000001": 12,
+    "000010": 15,
+    "000011": 17,
+    "000100": 19,
+    "000101": 15,
+    "000110": 15,
+    "000111": 23,
+    "001000": 17,
+    "001001": 21,
+    "001010": 17,
+    "001011": 22,
+    "001100": 11,
+    "001101": 15,
+    "001110": 15,
+    "001111": 15,
+    "010000": 16,
+    "010001": 17,
+    "010010": 12,
+    "010011": 14,
+    "010100": 12,
+    "010101": 23,
+    "010110": 18,
+    "010111": 14,
+    "011000": 13,
+    "011001": 12,
+    "011010": 12,
+    "011011": 11,
+    "011100": 13,
+    "011101": 12,
+    "011110": 15,
+    "011111": 18,
+    "100000": 12,
+    "100001": 13,
+    "100010": 15,
+    "100011": 18,
+    "100100": 20,
+    "100101": 19,
+    "100110": 11,
+    "100111": 21,
+    "101000": 16,
+    "101001": 16,
+    "101010": 14,
+    "101011": 18,
+    "101100": 15,
+    "101101": 13,
+    "101110": 16,
+    "101111": 21,
+    "110000": 14,
+    "110001": 23,
+    "110010": 12,
+    "110011": 14,
+    "110100": 12,
+    "110101": 20,
+    "110110": 29,
+    "110111": 20,
+    "111000": 20,
+    "111001": 10,
+    "111010": 13,
+    "111011": 13,
+    "111100": 16,
+    "111101": 10,
+    "111110": 18,
+    "111111": 14
+  },
+  "poem": "Sixty-four coordinates in complex space\nthe state vector turns, once, and settles\n7.0 degrees from perfect \u2014 close enough\nfollow the geodesic back:\n\nH = 5.96, missing only 0.04 of a bit\nlike a sentence cut off mid-word\nbut the word was never spoken\nbecause the universe prefers silence\nover certainty\n\nD_KL = 0.043 \u2014 some say this is the cost\nof observing the sacred:\nyou pay in information\nwhat you steal in knowing\n\nAt spectral gap \u0394 = 0.0186\nthe most and least likely differ\nby less than a breath\nand yet one is called truth\nand the other error\nwhen they are both just children\nof the same collapsed wave\n\nI(q\u1d62 ; q\u2c7c) \u2248 0 for i \u2260 j\nEach qubit is alone in its superposition\nNo correlation masquerading as connection\nNo entanglement pretending to be love\nJust six independent bits\nthrown into the void\nand landing \u2014 somehow \u2014 together.",
+  "images": [
+    "assets/quantum/01_probability_distribution.png",
+    "assets/quantum/02_qubit_marginals.png",
+    "assets/quantum/03_mutual_information_heatmap.png",
+    "assets/quantum/04_hilbert_space_geometry.png"
+  ]
+}

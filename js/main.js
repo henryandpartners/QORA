@@ -43,6 +43,7 @@ const { updateCoherenceUI, setMode } = setupUI();
 // ── State ──────────────────────────────────
 let coherence = 1.0;
 let currentMode = 0; // 0=coherence, 1=exciton, 2=deco
+let ritualLock = false; // ritual collapse freeze
 const modeNames = ['COHERENCE', 'EXCITON FLOW', 'DECOHERENCE CASCADE'];
 const modeDescs = [
   'Exciton transport through FMO scaffold',
@@ -99,6 +100,22 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+// ── Quantum ritual lock ─────────────────────
+// js/quantum.js dispatches these events when the enlightenment ritual
+// collapses the field (decoherence cascade) and when it returns.
+window.addEventListener('qora:collapse', () => {
+  ritualLock = true;
+  currentMode = 2;
+  coherence = 0.03;
+  setMode(2, 'DECOHERENCE CASCADE', 'Observer-triggered collapse');
+});
+window.addEventListener('qora:restore', () => {
+  ritualLock = false;
+  currentMode = 0;
+  coherence = 1.0;
+  setMode(0, 'COHERENCE', 'Exciton transport through FMO scaffold');
+});
+
 // ── Scroll zoom ────────────────────────────
 window.addEventListener('wheel', (e) => {
   camera.position.z = THREE.MathUtils.clamp(
@@ -123,7 +140,10 @@ function animate() {
   const time = clock.getElapsedTime();
 
   // Coherence dynamics
-  if (mouseActive) {
+  if (ritualLock) {
+    // Ritual collapse: hold the field in decoherence
+    coherence = THREE.MathUtils.lerp(coherence, 0.02, 0.06);
+  } else if (mouseActive) {
     const mouseDist = Math.sqrt(mouse.x ** 2 + mouse.y ** 2);
     const decayRate = currentMode === 2 ? 0.08 : 0.04;
     coherence = THREE.MathUtils.lerp(coherence, Math.max(0.03, 1 - mouseDist * 0.85), decayRate);
