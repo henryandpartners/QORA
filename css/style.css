@@ -75,7 +75,7 @@ canvas{display:block}
 }
 #coherence-fill{
   height:100%;width:100%;
-  background:linear-gradient(90deg,#7b61ff,#00e5a0);
+  background:linear-gradient(90deg,var(--qora-accent,#7b61ff),var(--qora-accent2,#00e5a0));
   border-radius:2px;
   transition:width 0.15s ease-out;
 }
@@ -113,6 +113,114 @@ canvas{display:block}
   z-index:30;
   display:flex;gap:10px;
 }
+.qora-menu-btn.spectrum{
+  border-color:rgba(255,255,255,0.25);
+}
+.qora-menu-btn.spectrum:hover{
+  border-color:#fff;
+  background:rgba(255,255,255,0.08);
+  box-shadow:0 0 18px rgba(255,255,255,0.15);
+}
+.qora-menu-btn.spectrum.active{
+  border-color:#00e5a0;
+  color:#00e5a0;
+}
+
+/* ── Spectrum panel ────────────────────────── */
+#qora-spectrum{
+  position:fixed;
+  bottom:88px;right:28px;
+  z-index:35;
+  width:300px;
+  background:rgba(10,10,22,0.92);
+  border:1px solid rgba(255,255,255,0.12);
+  backdrop-filter:blur(14px);
+  border-radius:4px;
+  padding:14px 16px 16px;
+  opacity:0;pointer-events:none;
+  transform:translateY(8px);
+  transition:all 0.3s ease;
+}
+#qora-spectrum.open{opacity:1;pointer-events:auto;transform:translateY(0)}
+.qora-spectrum-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;
+}
+.qora-spectrum-title{
+  font-family:'Space Mono',monospace;
+  font-size:12px;letter-spacing:3px;
+  color:rgba(255,255,255,0.6);
+  font-weight:700;
+}
+.qora-spectrum-sub{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:1px;
+  color:var(--qora-accent,#7b61ff);
+  flex:1;
+}
+.qora-spectrum-close{padding:3px 8px;font-size:9px}
+.qora-spectrum-swatches{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  gap:8px;margin-bottom:16px;
+}
+.qora-swatch{
+  height:30px;
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:3px;cursor:pointer;
+  transition:all 0.25s ease;
+}
+.qora-swatch:hover{transform:scale(1.1);border-color:#fff}
+.qora-swatch.active{
+  border-color:#fff;
+  box-shadow:0 0 12px rgba(255,255,255,0.4);
+}
+.qora-spectrum-row{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:10px;
+}
+.qora-spectrum-row:last-child{margin-bottom:0}
+.qora-spectrum-label{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:1.5px;
+  color:rgba(255,255,255,0.4);
+  width:76px;
+}
+.qora-spectrum-value{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:rgba(255,255,255,0.65);
+  width:38px;text-align:right;
+}
+input[type="range"]{
+  flex:1;
+  -webkit-appearance:none;
+  height:3px;
+  background:rgba(255,255,255,0.12);
+  border-radius:2px;
+  outline:none;
+  cursor:pointer;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:13px;height:13px;
+  border-radius:50%;
+  background:var(--qora-accent,#7b61ff);
+  border:1px solid rgba(255,255,255,0.5);
+  cursor:pointer;
+  transition:transform 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+input[type="range"]::-moz-range-thumb{
+  width:13px;height:13px;
+  border-radius:50%;
+  background:var(--qora-accent,#7b61ff);
+  border:1px solid rgba(255,255,255,0.5);
+  cursor:pointer;
+}
+@media(max-width:768px){
+  #qora-spectrum{bottom:auto;top:150px;right:16px;width:calc(100% - 32px);max-width:300px}
+  .qora-spectrum-swatches{grid-template-columns:repeat(6,1fr)}
+}
+
 .qora-menu-btn{
   background:rgba(20,20,45,0.55);
   border:1px solid rgba(123,97,255,0.35);

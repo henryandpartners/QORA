@@ -8,6 +8,9 @@ import * as THREE from 'three';
 const TRAIL_COUNT = 18;
 const TRAIL_LENGTH = 40;
 
+// Theme hook — updated by setTheme() from the spectrum panel
+let trailTheme = { hueMin: 0.6, hueRange: 0.25, decoHue: 0.08 };
+
 export function createExcitonTrails(scene) {
   const trails = [];
 
@@ -18,7 +21,7 @@ export function createExcitonTrails(scene) {
     }
 
     const geometry = new THREE.BufferGeometry().setFromPoints(pts);
-    const hue = 0.6 + Math.random() * 0.25; // blue → violet → cyan range
+    const hue = trailTheme.hueMin + Math.random() * trailTheme.hueRange;
     const material = new THREE.LineBasicMaterial({
       color: new THREE.Color().setHSL(hue, 0.7, 0.45 + Math.random() * 0.2),
       transparent: true,
@@ -90,7 +93,7 @@ export function createExcitonTrails(scene) {
       // Color shift in decoherence mode
       if (mode === 2 && coherence < 0.4) {
         tr.line.material.color.setHSL(
-          0.08 + (1 - coherence) * 0.08, // shift toward amber
+          trailTheme.decoHue + (1 - coherence) * 0.08, // shift toward energy-loss hue
           0.8,
           0.4 + coherence * 0.3
         );
@@ -102,5 +105,13 @@ export function createExcitonTrails(scene) {
     }
   }
 
-  return { trails, updateTrails };
+  // Live theme change — re-roll hues into the theme's range
+  function setTheme(theme) {
+    trailTheme = theme;
+    for (const tr of trails) {
+      tr.hue = trailTheme.hueMin + Math.random() * trailTheme.hueRange;
+    }
+  }
+
+  return { trails, updateTrails, setTrailTheme: setTheme };
 }

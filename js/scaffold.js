@@ -53,6 +53,7 @@ export function createScaffold(scene) {
 
   // Trimer connection rings (3 rings at 120°)
   const ringGeo = new THREE.TorusGeometry(0.6, 0.015, 16, 48);
+  const rings = [];
   for (let i = 0; i < 3; i++) {
     const angle = (i / 3) * Math.PI * 2;
     const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({
@@ -64,6 +65,7 @@ export function createScaffold(scene) {
     ring.rotation.x = Math.PI / 2;
     ring.rotation.z = angle;
     scene.add(ring);
+    rings.push(ring);
   }
 
   // Central node
@@ -76,5 +78,13 @@ export function createScaffold(scene) {
   const core = new THREE.Mesh(coreGeo, coreMat);
   scene.add(core);
 
-  return { outerScaffold, innerScaffold };
+  // Theme recoloring — live, no rebuild
+  function applyThemeColors(s) {
+    outerMat.color.setHex(s.outer);
+    innerMat.color.setHex(s.inner);
+    for (const ring of rings) ring.material.color.setHex(s.ring);
+    coreMat.color.setHex(s.core);
+  }
+
+  return { outerScaffold, innerScaffold, rings, core, applyThemeColors };
 }

@@ -11,6 +11,7 @@ export function createParticleSystem(scene) {
   const positions = new Float32Array(PARTICLE_COUNT * 3);
   const velocities = new Float32Array(PARTICLE_COUNT * 3);
   const colors = new Float32Array(PARTICLE_COUNT * 3);
+  const colorT = new Float32Array(PARTICLE_COUNT);
   const sizes = new Float32Array(PARTICLE_COUNT);
   const origins = new Float32Array(PARTICLE_COUNT * 3);
   const phases = new Float32Array(PARTICLE_COUNT);
@@ -39,7 +40,9 @@ export function createParticleSystem(scene) {
     velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.004;
 
     // Color gradient: violet → cyan → emerald (photosynthetic)
+    // colorT stores each particle's gradient position so themes can recolor live
     const t = Math.random();
+    colorT[i] = t;
     colors[i * 3] = 0.35 + Math.sin(t * Math.PI) * 0.3;     // R: low
     colors[i * 3 + 1] = 0.3 + t * 0.6;                       // G: rises
     colors[i * 3 + 2] = 0.7 + Math.cos(t * Math.PI) * 0.3;  // B: high→med
@@ -123,6 +126,21 @@ export function createParticleSystem(scene) {
     sizes,
     origins,
     phases,
+    // Theme hook: decoRGB is the "energy loss" color used by the
+    // decoherence cascade; recolor() re-derives all particle colors
+    // from a theme gradient without touching positions.
+    decoRGB: [0.48, 0.9, 0.5],
+
+    recolor(gradientFn, decoRGB) {
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const [r, g, b] = gradientFn(colorT[i]);
+        colors[i * 3] = r;
+        colors[i * 3 + 1] = g;
+        colors[i * 3 + 2] = b;
+      }
+      points.geometry.attributes.color.needsUpdate = true;
+      if (decoRGB) state.decoRGB = decoRGB;
+    },
 
     reset() {
       for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -191,12 +209,11 @@ export function createParticleSystem(scene) {
         positions[iz] += velocities[iz];
 
         // ── Color shift based on coherence ──
-        const t = Math.random();
         if (mode === 2 && coherence < 0.3) {
-          // Decoherence: shift toward amber/red
-          colors[ix] = 0.48 + (1 - coherence) * 0.5;
-          colors[iy] = 0.9 * coherence;
-          colors[iz] = 0.5 * coherence;
+          // Decoherence: shift toward the theme's energy-loss color
+          colors[ix] = state.decoRGB[0] + (1 - coherence) * 0.5;
+          colors[iy] = state.decoRGB[1] * coherence;
+          colors[iz] = state.decoRGB[2] * coherence;
         }
       }
     },

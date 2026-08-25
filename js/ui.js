@@ -36,15 +36,17 @@ export function setupUI() {
     coherenceValue.textContent = pct + '%';
 
     // Color the percentage based on coherence level
+    // The lead color follows the active spectrum theme accent
+    const accent = 'var(--qora-accent, #7b61ff)';
     if (coherence > 0.7) {
       coherenceValue.style.color = '#00e5a0';
-      coherenceFill.style.background = 'linear-gradient(90deg, #7b61ff, #00e5a0)';
+      coherenceFill.style.background = `linear-gradient(90deg, ${accent}, #00e5a0)`;
     } else if (coherence > 0.3) {
       coherenceValue.style.color = '#ffab40';
-      coherenceFill.style.background = 'linear-gradient(90deg, #7b61ff, #ffab40)';
+      coherenceFill.style.background = `linear-gradient(90deg, ${accent}, #ffab40)`;
     } else {
       coherenceValue.style.color = '#ff6b35';
-      coherenceFill.style.background = 'linear-gradient(90deg, #7b61ff, #ff6b35)';
+      coherenceFill.style.background = `linear-gradient(90deg, ${accent}, #ff6b35)`;
     }
   }
 

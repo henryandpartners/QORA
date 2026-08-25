@@ -3,6 +3,7 @@ import { createScaffold } from './scaffold.js';
 import { createParticleSystem } from './particles.js';
 import { createExcitonTrails } from './trails.js';
 import { setupUI } from './ui.js';
+import { setupSpectrum } from './spectrum.js';
 
 // ── Scene ──────────────────────────────────
 const scene = new THREE.Scene();
@@ -29,16 +30,25 @@ pointLight.position.set(2, 2, 4);
 scene.add(pointLight);
 
 // ── Scaffold ───────────────────────────────
-const { outerScaffold, innerScaffold } = createScaffold(scene);
+const { outerScaffold, innerScaffold, applyThemeColors } = createScaffold(scene);
 
 // ── Particles ──────────────────────────────
 const { points, particleSystem } = createParticleSystem(scene);
 
 // ── Exciton Trails ─────────────────────────
-const { trails, updateTrails } = createExcitonTrails(scene);
+const { trails, updateTrails, setTrailTheme } = createExcitonTrails(scene);
 
 // ── UI ─────────────────────────────────────
 const { updateCoherenceUI, setMode } = setupUI();
+
+// ── Spectrum panel (C) ─────────────────────
+setupSpectrum({
+  renderer,
+  pointLight,
+  particleSystem,
+  scaffold: { applyThemeColors },
+  trails: { setTrailTheme },
+});
 
 // ── State ──────────────────────────────────
 let coherence = 1.0;
