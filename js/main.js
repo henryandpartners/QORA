@@ -43,6 +43,7 @@ const { updateCoherenceUI, setMode } = setupUI();
 
 // ── Spectrum panel (C) ─────────────────────
 setupSpectrum({
+  scene,
   renderer,
   pointLight,
   particleSystem,
