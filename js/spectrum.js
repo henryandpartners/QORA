@@ -4,12 +4,20 @@
  * C key / menu button — live color systems + brightness.
  * Themes recolor particles, scaffold, trails, and UI accents
  * in place (no rebuild). Brightness drives renderer exposure.
+ *
+ * ELEMENT COLORS (advanced section): per-element color pickers —
+ * particle gradient endpoints, scaffold outer/inner, rings, core,
+ * trails, decoherence color, UI accents, background. Touching any
+ * picker switches the system into CUSTOM mode; picking a theme
+ * swatch resets all elements to that theme.
  */
 
+import * as THREE from 'three';
 import { THEMES } from './themes.js';
 
 let ctx = null;
 let activeTheme = THEMES[0];
+let panelEl = null;
 
 // ── Background ────────────────────────────────────────────────
 function hexToRgb(hex) {
@@ -35,6 +43,128 @@ function setBackground(hex) {
   if (val) val.textContent = hex;
 }
 
+// ── Per-element color state ───────────────────────────────────
+// Mirrors the active theme; any picker edit flips particleCustom
+// (for particles) and marks the session CUSTOM.
+const els = {
+  bg: '#050510',
+  pA: '#7b61ff', pB: '#00e5a0',   // particle gradient endpoints
+  outer: '#1a1a2e', inner: '#2a1a3e',
+  ring: '#7b61ff', core: '#7b61ff',
+  trail: '#00d4ff',                // trail hue source
+  deco: '#7ac880',                 // decoherence energy-loss color
+  accent: '#7b61ff', accent2: '#00e5a0',
+  particleCustom: false,
+};
+
+const _hsl = { h: 0, s: 0, l: 0 };
+
+function clamp01(v) { return Math.min(1, Math.max(0, v)); }
+
+function rgbToHex(rgb) {
+  return '#' + rgb.map(v => Math.round(clamp01(v) * 255).toString(16).padStart(2, '0')).join('');
+}
+
+function hexToRgb01(hex) {
+  const c = new THREE.Color(hex);
+  return [c.r, c.g, c.b];
+}
+
+function hexToInt(hex) {
+  return parseInt(hex.replace('#', ''), 16);
+}
+
+function intToHex(n) {
+  return '#' + n.toString(16).padStart(6, '0');
+}
+
+function hueFromHex(hex) {
+  new THREE.Color(hex).getHSL(_hsl);
+  return _hsl.h;
+}
+
+function hslHex(h, s, l) {
+  return '#' + new THREE.Color().setHSL(((h % 1) + 1) % 1, s, l).getHexString();
+}
+
+function getParticleGradient() {
+  if (els.particleCustom) {
+    const a = hexToRgb01(els.pA);
+    const b = hexToRgb01(els.pB);
+    return (t) => [
+      a[0] + (b[0] - a[0]) * t,
+      a[1] + (b[1] - a[1]) * t,
+      a[2] + (b[2] - a[2]) * t,
+    ];
+  }
+  return activeTheme.gradient;
+}
+
+// ── Per-element appliers (all live, no rebuild) ───────────────
+function applyParticles() {
+  if (ctx && ctx.particleSystem) {
+    ctx.particleSystem.recolor(getParticleGradient(), hexToRgb01(els.deco));
+  }
+}
+
+function applyScaffold() {
+  if (ctx && ctx.scaffold) {
+    ctx.scaffold.applyThemeColors({
+      outer: hexToInt(els.outer),
+      inner: hexToInt(els.inner),
+      ring: hexToInt(els.ring),
+      core: hexToInt(els.core),
+    });
+  }
+}
+
+function applyTrails() {
+  if (ctx && ctx.trails) {
+    ctx.trails.setTrailTheme({
+      hueMin: hueFromHex(els.trail),
+      hueRange: 0.1,
+      decoHue: hueFromHex(els.deco),
+    });
+  }
+}
+
+function applyAccents() {
+  const root = document.documentElement;
+  root.style.setProperty('--qora-accent', els.accent);
+  root.style.setProperty('--qora-accent2', els.accent2);
+}
+
+function markCustom() {
+  document.querySelectorAll('.qora-swatch').forEach(s => s.classList.remove('active'));
+  const n = document.getElementById('qora-spectrum-name');
+  if (n) n.textContent = 'CUSTOM';
+}
+
+// Pull every element value out of a theme (for swatch clicks).
+function syncFromTheme(theme) {
+  els.particleCustom = false;
+  els.bg = theme.bg || '#050510';
+  els.pA = rgbToHex(theme.gradient(0));
+  els.pB = rgbToHex(theme.gradient(1));
+  els.outer = intToHex(theme.scaffold.outer);
+  els.inner = intToHex(theme.scaffold.inner);
+  els.ring = intToHex(theme.scaffold.ring);
+  els.core = intToHex(theme.scaffold.core);
+  els.trail = hslHex(theme.trailHue.min + theme.trailHue.range / 2, 0.7, 0.55);
+  els.deco = rgbToHex(theme.decoRGB);
+  els.accent = theme.accent;
+  els.accent2 = theme.accent2;
+}
+
+function syncPickers() {
+  if (!panelEl) return;
+  panelEl.querySelectorAll('input[type="color"][data-el]').forEach(inp => {
+    const key = inp.dataset.el;
+    if (els[key]) inp.value = els[key];
+  });
+}
+
+// ── Panel ─────────────────────────────────────────────────────
 export function setupSpectrum(context) {
   ctx = context;
   ensureDom();
@@ -71,12 +201,57 @@ function ensureDom() {
     </div>
     <div class="qora-spectrum-row">
       <span class="qora-spectrum-label">BACKGROUND</span>
-      <input type="color" id="qora-bg-picker" value="#050510" title="Background color">
+      <input type="color" id="qora-bg-picker" data-el="bg" value="#050510" title="Background color">
       <span class="qora-spectrum-value" id="qora-bg-val">#050510</span>
+    </div>
+    <button class="qora-adv-toggle" id="qora-adv-toggle">ELEMENT COLORS ▾</button>
+    <div class="qora-adv" id="qora-adv">
+      <div class="qora-adv-row">
+        <span class="qora-adv-label">PARTICLES</span>
+        <span class="qora-adv-pickers">
+          <input type="color" data-el="pA" title="Particle gradient start">
+          <input type="color" data-el="pB" title="Particle gradient end">
+        </span>
+      </div>
+      <div class="qora-adv-row">
+        <span class="qora-adv-label">SCAFFOLD</span>
+        <span class="qora-adv-pickers">
+          <input type="color" data-el="outer" title="Outer envelope">
+          <input type="color" data-el="inner" title="Inner core shell">
+        </span>
+      </div>
+      <div class="qora-adv-row">
+        <span class="qora-adv-label">RINGS·CORE</span>
+        <span class="qora-adv-pickers">
+          <input type="color" data-el="ring" title="Trimer rings">
+          <input type="color" data-el="core" title="Reaction center">
+        </span>
+      </div>
+      <div class="qora-adv-row">
+        <span class="qora-adv-label">TRAILS</span>
+        <span class="qora-adv-pickers">
+          <input type="color" data-el="trail" title="Exciton trail hue">
+        </span>
+      </div>
+      <div class="qora-adv-row">
+        <span class="qora-adv-label">DECOHERENCE</span>
+        <span class="qora-adv-pickers">
+          <input type="color" data-el="deco" title="Energy-loss color on collapse">
+        </span>
+      </div>
+      <div class="qora-adv-row">
+        <span class="qora-adv-label">ACCENTS</span>
+        <span class="qora-adv-pickers">
+          <input type="color" data-el="accent" title="UI accent 1">
+          <input type="color" data-el="accent2" title="UI accent 2">
+        </span>
+      </div>
     </div>
   `;
   document.body.appendChild(panel);
+  panelEl = panel;
 
+  // Theme swatches
   panel.addEventListener('click', (e) => {
     const swatch = e.target.closest('.qora-swatch');
     if (swatch) {
@@ -86,8 +261,13 @@ function ensureDom() {
       swatch.classList.add('active');
     }
     if (e.target.closest('.qora-spectrum-close')) togglePanel(false);
+    if (e.target.closest('#qora-adv-toggle')) {
+      document.getElementById('qora-adv').classList.toggle('open');
+      document.getElementById('qora-adv-toggle').classList.toggle('open');
+    }
   });
 
+  // Sliders
   const brightness = document.getElementById('qora-brightness');
   brightness.addEventListener('input', () => {
     const pct = parseInt(brightness.value, 10);
@@ -102,12 +282,33 @@ function ensureDom() {
     setGlow(pct / 100);
   });
 
-  const bgPicker = document.getElementById('qora-bg-picker');
-  bgPicker.addEventListener('input', () => {
-    const hex = bgPicker.value;
-    document.getElementById('qora-bg-val').textContent = hex;
-    setBackground(hex);
+  // Per-element color pickers
+  panel.querySelectorAll('input[type="color"][data-el]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const key = inp.dataset.el;
+      els[key] = inp.value;
+      if (key === 'pA' || key === 'pB') {
+        els.particleCustom = true;
+        applyParticles();
+      } else if (key === 'bg') {
+        setBackground(inp.value);
+      } else if (key === 'outer' || key === 'inner' || key === 'ring' || key === 'core') {
+        applyScaffold();
+      } else if (key === 'trail') {
+        applyTrails();
+      } else if (key === 'deco') {
+        applyParticles();  // decoRGB feeds the cascade
+        applyTrails();     // decoHue feeds trail collapse shift
+      } else if (key === 'accent' || key === 'accent2') {
+        applyAccents();
+      }
+      markCustom();
+    });
   });
+
+  // Initialize pickers from the default theme
+  syncFromTheme(activeTheme);
+  syncPickers();
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyC') {
@@ -136,13 +337,11 @@ function applyTheme(theme) {
     ctx.trails.setTrailTheme({ hueMin: theme.trailHue.min, hueRange: theme.trailHue.range, decoHue: theme.decoHue });
   }
 
-  // UI accents
-  const root = document.documentElement;
-  root.style.setProperty('--qora-accent', theme.accent);
-  root.style.setProperty('--qora-accent2', theme.accent2);
-
-  // Background (theme-linked; the color picker overrides independently)
+  // Sync element state + pickers + background + accents
+  syncFromTheme(theme);
+  syncPickers();
   if (theme.bg) setBackground(theme.bg);
+  applyAccents();
 }
 
 function setBrightness(v) {
