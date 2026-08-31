@@ -544,6 +544,76 @@ input[type="color"]::-moz-color-swatch{border:none;border-radius:2px}
 }
 .qora-ritual-actions{display:flex;gap:12px;justify-content:center}
 
+/* ── v2: entrance stagger ───────────────────── */
+.qora-fade{
+  opacity:0;
+  transform:translateY(14px);
+  animation:qfade 0.6s ease forwards;
+  animation-delay:var(--d,0ms);
+}
+@keyframes qfade{to{opacity:1;transform:translateY(0)}}
+
+/* ── v2: interactive charts ─────────────────── */
+.qora-chart-block{margin-bottom:36px}
+.qora-chart-wrap{position:relative;border:1px solid rgba(255,255,255,0.08);background:rgba(10,10,20,0.5);border-radius:2px;padding:10px}
+.qora-chart-wrap canvas{display:block;width:100%;cursor:crosshair}
+.qora-chart-tip{
+  display:none;position:absolute;top:8px;
+  transform:translateX(-50%);
+  background:rgba(16,16,32,0.95);
+  border:1px solid rgba(0,212,255,0.4);
+  color:#00d4ff;
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  padding:5px 10px;
+  border-radius:2px;
+  pointer-events:none;
+  white-space:nowrap;
+  z-index:2;
+}
+.qora-chart-legend{
+  display:flex;gap:18px;flex-wrap:wrap;
+  margin-top:10px;
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:1px;
+  color:rgba(255,255,255,0.4);
+}
+.qora-chart-legend i{
+  display:inline-block;width:10px;height:10px;
+  border-radius:2px;margin-right:6px;
+  vertical-align:-1px;
+}
+
+/* ── v2: sequential qubit collapse ──────────── */
+.qora-qubit.flicker{animation:qubit-flicker 0.35s infinite alternate}
+.qora-ritual-qubits .qora-qubit.on,.qora-ritual-qubits .qora-qubit.off{
+  animation:qubit-lock 0.35s ease;
+}
+@keyframes qubit-lock{
+  0%{transform:scale(1.25);filter:brightness(2)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+
+/* ── v2: session history ────────────────────── */
+.qora-history{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-top:26px;justify-content:center;
+}
+.qora-hist-label{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:rgba(255,255,255,0.25);
+  margin-right:4px;
+}
+.qora-hist-chip{
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  color:rgba(0,229,160,0.8);
+  border:1px solid rgba(0,229,160,0.25);
+  background:rgba(0,229,160,0.06);
+  padding:3px 8px;border-radius:2px;
+}
+
 @media(max-width:768px){
   .qora-metrics{grid-template-columns:repeat(2,1fr)}
   .qora-images{grid-template-columns:1fr}
