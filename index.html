@@ -35,6 +35,7 @@
   <div>Q — Quantum Geometry</div>
   <div>R — Enlightenment Ritual</div>
   <div>C — Spectrum</div>
+  <div>I — The Organism</div>
   <div>F — Fullscreen</div>
 </div>
 
@@ -42,6 +43,7 @@
   <button class="qora-menu-btn" id="qora-btn-quantum">Q — QUANTUM GEOMETRY</button>
   <button class="qora-menu-btn accent" id="qora-btn-ritual">R — ENLIGHTENMENT RITUAL</button>
   <button class="qora-menu-btn spectrum" id="qora-btn-spectrum">C — SPECTRUM</button>
+  <button class="qora-menu-btn about" id="qora-btn-about">I — THE ORGANISM</button>
 </div>
 
 <script type="importmap">
@@ -51,6 +53,7 @@
 <script type="module">
 import { openQuantum, closeQuantum, invokeRitual, closeRitual } from './js/quantum.js';
 import { togglePanel } from './js/spectrum.js';
+import { toggleAbout } from './js/about.js';
 document.getElementById('qora-btn-quantum').addEventListener('click', () => {
   const q = document.getElementById('qora-quantum-overlay');
   if (q && q.classList.contains('open')) closeQuantum(); else openQuantum();
@@ -60,6 +63,7 @@ document.getElementById('qora-btn-ritual').addEventListener('click', () => {
   if (r && r.classList.contains('open')) closeRitual(); else invokeRitual();
 });
 document.getElementById('qora-btn-spectrum').addEventListener('click', () => togglePanel());
+document.getElementById('qora-btn-about').addEventListener('click', () => toggleAbout());
 </script>
 </body>
 </html>
