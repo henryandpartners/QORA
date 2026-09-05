@@ -1,0 +1,191 @@
+/* QORA — The Descent (journey) */
+:root {
+  --bg: #050508;
+  --ink: #e8e6f0;
+  --dim: #8a87a0;
+  --accent: #7b61ff;
+  --accent2: #00e5a0;
+  --line: rgba(123, 97, 255, 0.25);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+#journey-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.chapter {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12vh 8vw;
+  max-width: 820px;
+}
+.chapter .num {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+  margin-bottom: 1.6rem;
+}
+.chapter h2 {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 3.4vw, 2.3rem);
+  line-height: 1.2;
+  margin-bottom: 2rem;
+}
+.chapter p {
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.85;
+  color: var(--ink);
+  margin-bottom: 1.4rem;
+  max-width: 620px;
+}
+.chapter p em, .chapter p strong { color: #fff; font-style: normal; font-weight: 400; }
+.chapter .sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin: 1.8rem 0 0.6rem;
+}
+.chapter ul { list-style: none; margin-top: 0.4rem; }
+.chapter li {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--dim);
+  padding-left: 1.4rem;
+  position: relative;
+  margin-bottom: 0.7rem;
+  max-width: 620px;
+}
+.chapter li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+.chapter li strong { color: var(--ink); font-weight: 400; }
+
+/* prologue */
+#prologue { align-items: flex-start; text-align: left; }
+#prologue .wordmark {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(2.6rem, 8vw, 5rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  margin-bottom: 0.6rem;
+}
+#prologue .tagline {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin-bottom: 3rem;
+}
+#prologue p.lede {
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  line-height: 1.9;
+  max-width: 560px;
+}
+.scroll-hint {
+  position: absolute;
+  bottom: 6vh;
+  left: 8vw;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--dim);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* reveal on scroll */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 1s ease, transform 1s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* finale */
+#finale { align-items: center; text-align: center; min-height: 100vh; }
+#finale h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); }
+#finale p { max-width: 520px; margin: 0 auto 3rem; }
+#enter-qora {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: #fff;
+  background: transparent;
+  border: 1px solid var(--accent);
+  padding: 1.2rem 3.2rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+}
+#enter-qora:hover {
+  background: rgba(123, 97, 255, 0.15);
+  border-color: #fff;
+  box-shadow: 0 0 40px rgba(123, 97, 255, 0.4);
+}
+#finale .skip {
+  display: block;
+  margin-top: 2.4rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--dim);
+  text-decoration: none;
+}
+#finale .skip:hover { color: var(--ink); }
+
+.progress-rail {
+  position: fixed;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.progress-rail a {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(138, 135, 160, 0.35);
+  transition: background 0.3s, transform 0.3s;
+}
+.progress-rail a.active { background: var(--accent); transform: scale(1.6); box-shadow: 0 0 10px var(--accent); }
+
+.skip-top {
+  position: fixed;
+  top: 1.6rem;
+  right: 2rem;
+  z-index: 3;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--dim);
+  text-decoration: none;
+  border: 1px solid rgba(138,135,160,0.3);
+  padding: 0.55rem 1.1rem;
+  transition: color 0.3s, border-color 0.3s;
+}
+.skip-top:hover { color: #fff; border-color: var(--accent); }
+
+@media (max-width: 640px) {
+  .progress-rail { display: none; }
+  .chapter { padding: 14vh 7vw; }
+  .skip-top { top: 1rem; right: 1rem; }
+}
