@@ -1,7 +1,12 @@
 import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createScaffold } from './scaffold.js';
 import { createParticleSystem } from './particles.js';
 import { createExcitonTrails } from './trails.js';
+import { createDust } from './dust.js';
 import { setupUI } from './ui.js';
 import { setupSpectrum } from './spectrum.js';
 
@@ -10,17 +15,29 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x050510, 0.03);
 
 // ── Camera ─────────────────────────────────
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 50);
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 60);
 camera.position.set(0, 0, 8);
 camera.lookAt(0, 0, 0);
 
 // ── Renderer ───────────────────────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 document.body.appendChild(renderer.domElement);
+
+// ── Post-processing: bloom ─────────────────
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(innerWidth, innerHeight),
+  0.85,  // strength (coherence-driven each frame)
+  0.55,  // radius
+  0.12   // threshold
+);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
 
 // ── Lighting (subtle) ──────────────────────
 const ambientLight = new THREE.AmbientLight(0x1a1a3e, 0.6);
@@ -30,13 +47,16 @@ pointLight.position.set(2, 2, 4);
 scene.add(pointLight);
 
 // ── Scaffold ───────────────────────────────
-const { outerScaffold, innerScaffold, applyThemeColors } = createScaffold(scene);
+const { outerScaffold, innerScaffold, core, applyThemeColors } = createScaffold(scene);
 
 // ── Particles ──────────────────────────────
 const { points, particleSystem } = createParticleSystem(scene);
 
 // ── Exciton Trails ─────────────────────────
 const { trails, updateTrails, setTrailTheme } = createExcitonTrails(scene);
+
+// ── Background dust (depth layer) ──────────
+const { updateDust } = createDust(scene);
 
 // ── UI ─────────────────────────────────────
 const { updateCoherenceUI, setMode } = setupUI();
@@ -127,10 +147,15 @@ window.addEventListener('qora:restore', () => {
   setMode(0, 'COHERENCE', 'Exciton transport through FMO scaffold');
 });
 
-// ── Scroll zoom ────────────────────────────
+// ── Camera rig: slow orbit + scroll dolly + mouse parallax ──
+let camTheta = 0;
+let camRadius = 8;
+let camRadiusTarget = 8;
+const camParallax = new THREE.Vector2(); // smoothed mouse offset
+
 window.addEventListener('wheel', (e) => {
-  camera.position.z = THREE.MathUtils.clamp(
-    camera.position.z + e.deltaY * 0.005,
+  camRadiusTarget = THREE.MathUtils.clamp(
+    camRadiusTarget + e.deltaY * 0.005,
     3,
     15
   );
@@ -141,6 +166,7 @@ window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
 });
 
 // ── Animation Loop ─────────────────────────
@@ -169,20 +195,42 @@ function animate() {
   points.geometry.attributes.color.needsUpdate = true;
   points.geometry.attributes.size.needsUpdate = true;
 
-  // Update trails
-  updateTrails(time, coherence, currentMode);
+  // Update trails + dust
+  updateTrails(time, coherence, currentMode, camera);
+  updateDust(time);
 
-  // Rotate scaffold
+  // Scaffold: organic breathing + rotation
+  const breathe = 1 + Math.sin(time * 0.5) * 0.015 * (0.3 + coherence * 0.7);
+  outerScaffold.scale.setScalar(breathe);
+  innerScaffold.scale.setScalar(2 - breathe);
   outerScaffold.rotation.y += 0.003;
   outerScaffold.rotation.x = Math.sin(time * 0.2) * 0.08;
   innerScaffold.rotation.y -= 0.004;
   innerScaffold.rotation.z = Math.sin(time * 0.3) * 0.1;
 
-  // Camera drift
-  const camDrift = currentMode === 2 ? 0.3 : 0.1;
-  camera.position.x += (Math.sin(time * 0.15) * camDrift - camera.position.x) * 0.01;
-  camera.position.y += (Math.cos(time * 0.12) * camDrift * 0.7 - camera.position.y) * 0.01;
+  // Core node: coherent pulse / decoherent jitter
+  const corePulse = 1 + Math.sin(time * 1.8) * 0.22 * (0.4 + coherence * 0.6)
+    + (1 - coherence) * Math.sin(time * 9.0) * 0.15;
+  core.scale.setScalar(Math.max(0.4, corePulse));
+
+  // Camera: slow orbit (faster + wilder in decoherence)
+  camTheta += currentMode === 2 ? 0.0016 : 0.0005;
+  camRadius += (camRadiusTarget - camRadius) * 0.06;
+  const px = mouseActive ? mouse.x : 0;
+  const py = mouseActive ? mouse.y : 0;
+  camParallax.x += (px - camParallax.x) * 0.03;
+  camParallax.y += (py - camParallax.y) * 0.03;
+  const jitter = currentMode === 2 ? Math.sin(time * 5.1) * 0.08 * (1 - coherence) : 0;
+  camera.position.set(
+    Math.sin(camTheta + camParallax.x * 0.45 + jitter) * camRadius,
+    camParallax.y * 1.1 + Math.sin(time * 0.07) * 0.2 + jitter * 0.5,
+    Math.cos(camTheta + camParallax.x * 0.45) * camRadius
+  );
   camera.lookAt(0, 0, 0);
+
+  // Bloom: hotter and throbbing as coherence drops
+  bloomPass.strength =
+    0.7 + (1 - coherence) * 0.9 + Math.sin(time * 2.2) * 0.06 * (1 - coherence);
 
   // Update shader uniforms
   points.material.uniforms.uTime.value = time;
@@ -199,7 +247,7 @@ function animate() {
     document.getElementById('mode-label').style.color = `rgb(${(r*100)|0},${(g*180)|0},${(160+coherence*95)|0})`;
   }
 
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 animate();

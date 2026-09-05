@@ -79,13 +79,21 @@ export function createParticleSystem(scene) {
         // Alpha scales with coherence — decoherent = dimmer
         vAlpha = 0.35 + uCoherence * 0.65;
 
+        // Twinkle: subtle per-particle shimmer from size + time
+        float twinkle = 0.85 + 0.15 * sin(uTime * (2.0 + fract(size) * 3.0) + size * 21.0);
+        vAlpha *= twinkle;
+
+        // Sparkle: occasional bright flash (coherence events)
+        float flashPhase = fract(uTime * 0.08 + fract(size * 0.731));
+        if (flashPhase > 0.986) vAlpha *= 2.2;
+
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
         float dist = length(mvPosition.xyz);
 
         // Point size: larger when coherent, smaller when decoherent
         float baseSize = size * uPR * (6.0 / -mvPosition.z);
         float coherenceScale = mix(0.4, 1.0, uCoherence);
-        gl_PointSize = baseSize * coherenceScale;
+        gl_PointSize = baseSize * coherenceScale * (0.9 + 0.1 * twinkle);
 
         gl_Position = projectionMatrix * mvPosition;
       }
@@ -150,6 +158,7 @@ export function createParticleSystem(scene) {
         velocities[i * 3] = (Math.random() - 0.5) * 0.004;
         velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.004;
         velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.004;
+        sizes[i] = 1.5 + Math.random() * 3.5;
       }
     },
 
@@ -207,6 +216,12 @@ export function createParticleSystem(scene) {
         positions[ix] += velocities[ix];
         positions[iy] += velocities[iy];
         positions[iz] += velocities[iz];
+
+        // ── Velocity-reactive size: faster particles read as energy ──
+        const speed = Math.sqrt(
+          velocities[ix] ** 2 + velocities[iy] ** 2 + velocities[iz] ** 2
+        );
+        sizes[i] = 1.5 + Math.min(4.5, speed * 900) + phases[i] * 0.2;
 
         // ── Color shift based on coherence ──
         if (mode === 2 && coherence < 0.3) {
