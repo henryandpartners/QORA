@@ -1,17 +1,20 @@
 import * as THREE from 'three';
 
 /**
- * Exciton transport trails — curved ribbons through the protein scaffold
- * representing photosynthetic energy transfer between chromophores.
+ * Exciton transport trails — glowing circular orbits through the protein
+ * scaffold, representing cyclic photosynthetic energy transfer between
+ * chromophores.
  *
- * Each trail is a camera-facing ribbon (billboarded strip) with a custom
- * shader: bright head, tapering luminous tail fading to nothing. This
- * replaces the old 1px THREE.Line render (linewidth is ignored on most
- * platforms, which made the trails nearly invisible).
+ * Each trail is a camera-facing ribbon bent into a near-closed circle with
+ * a random orientation and radius. A bright comet head travels around the
+ * ring; the rest of the circle glows faintly so the full loop reads as a
+ * circle. Custom shader, additive blending (linewidth-safe, unlike
+ * THREE.Line which is ignored on most platforms).
  */
 
 const TRAIL_COUNT = 18;
-const TRAIL_LENGTH = 40;
+const TRAIL_LENGTH = 64;
+const ARC = Math.PI * 1.92; // arc coverage — nearly a closed circle
 
 // Theme hook — updated by setTheme() from the spectrum panel
 let trailTheme = { hueMin: 0.6, hueRange: 0.25, decoHue: 0.08 };
@@ -63,10 +66,11 @@ function buildRibbon(scene) {
       uniform float uOpacity;
       varying float vT;
       void main() {
-        // Bright at the head (vT=0), fading to nothing at the tail (vT=1)
-        float headGlow = exp(-vT * 3.2);
-        float tailFade = 1.0 - smoothstep(0.55, 1.0, vT);
-        float a = uOpacity * headGlow * tailFade;
+        // Comet head (vT=0) rides a faintly glowing full ring
+        float headGlow = exp(-vT * 2.6);
+        float ringBase = 0.32;
+        float endFade = 1.0 - smoothstep(0.92, 1.0, vT);
+        float a = uOpacity * (ringBase + (1.0 - ringBase) * headGlow) * endFade;
         // Hot white-ish core at the head
         vec3 col = mix(uColor * 1.6, uColor, clamp(vT * 4.0, 0.0, 1.0));
         gl_FragColor = vec4(col, a);
@@ -95,23 +99,31 @@ export function createExcitonTrails(scene) {
       points.push(new THREE.Vector3());
     }
 
+    // Random circle orientation: orthonormal basis (u, v) from a random quaternion
+    const quat = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2
+    ));
+    const u = new THREE.Vector3(1, 0, 0).applyQuaternion(quat);
+    const v = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
+
     const hue = trailTheme.hueMin + Math.random() * trailTheme.hueRange;
 
     trails.push({
       ribbon,
       points,
-      head: new THREE.Vector3(
-        (Math.random() - 0.5) * 3,
-        (Math.random() - 0.5) * 3,
-        (Math.random() - 0.5) * 3
+      center: new THREE.Vector3(
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.5
       ),
-      target: new THREE.Vector3(
-        (Math.random() - 0.5) * 3.5,
-        (Math.random() - 0.5) * 3.5,
-        (Math.random() - 0.5) * 3.5
-      ),
-      speed: 0.015 + Math.random() * 0.04,
-      life: Math.random(),
+      u,
+      v,
+      radius: 0.9 + Math.random() * 1.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: (0.25 + Math.random() * 0.5) * (Math.random() < 0.5 ? -1 : 1),
+      life: 0.6 + Math.random() * 0.4,
       baseOpacity: 0.2 + Math.random() * 0.3,
       hue,
     });
@@ -119,30 +131,23 @@ export function createExcitonTrails(scene) {
 
   function updateTrails(time, coherence, mode, camera) {
     _camPos.setFromMatrixPosition(camera.matrixWorld);
+    const step = ARC / (TRAIL_LENGTH - 1);
 
     for (const tr of trails) {
-      // Move head toward target
-      tr.head.lerp(tr.target, tr.speed * (0.5 + coherence * 0.5));
+      // Head angle advances with time; coherence speeds the orbit up
+      const headAngle = tr.phase + time * tr.speed * (0.5 + coherence * 0.5);
+      const dir = Math.sign(tr.speed) || 1;
 
-      // Pick new target when close
-      if (tr.head.distanceTo(tr.target) < 0.25) {
-        // New target: prefer scaffold surface (r ≈ 1.5-2.2)
-        const phi = Math.random() * Math.PI * 2;
-        const theta = Math.acos(2 * Math.random() - 1);
-        const r = 1.2 + Math.random() * 1.4;
-        tr.target.set(
-          r * Math.sin(theta) * Math.cos(phi),
-          r * Math.sin(theta) * Math.sin(phi),
-          r * Math.cos(theta)
-        );
-        tr.life = 1.0;
+      // Sample the circle: head first, tail trailing behind along the arc
+      for (let i = 0; i < TRAIL_LENGTH; i++) {
+        const ang = headAngle - dir * i * step;
+        const ca = Math.cos(ang) * tr.radius;
+        const sa = Math.sin(ang) * tr.radius;
+        tr.points[i]
+          .copy(tr.center)
+          .addScaledVector(tr.u, ca)
+          .addScaledVector(tr.v, sa);
       }
-
-      // Shift trail points (snake-like)
-      for (let i = tr.points.length - 1; i > 0; i--) {
-        tr.points[i].copy(tr.points[i - 1]);
-      }
-      tr.points[0].copy(tr.head);
 
       // Rebuild ribbon: each point extruded along a camera-facing side vector
       const { positions } = tr.ribbon;
@@ -172,7 +177,8 @@ export function createExcitonTrails(scene) {
       }
       tr.ribbon.mesh.geometry.attributes.position.needsUpdate = true;
 
-      // Opacity: coherence-dependent + life fade
+      // Opacity: coherence-dependent + slow life breathing
+      tr.life = 0.7 + 0.3 * Math.sin(time * 0.3 + tr.phase);
       const lifeAlpha = tr.life;
       const coherentAlpha = tr.baseOpacity + coherence * 0.5;
       let modeAlpha = 1.0;
@@ -192,8 +198,6 @@ export function createExcitonTrails(scene) {
       } else {
         tr.ribbon.material.uniforms.uColor.value.setHSL(tr.hue, 0.7, 0.45 + coherence * 0.3);
       }
-
-      tr.life -= 0.003;
     }
   }
 

@@ -18,7 +18,7 @@ const SECTIONS = [
       ['#7b61ff', 'three rings at 120°', 'the three subunits of the trimer, bound in three-fold symmetry'],
       ['var(--qora-accent2, #00e5a0)', 'the glowing central node', 'the reaction center — the destination. Energy that arrives here is used; energy that doesn’t is lost as heat'],
       ['#00d4ff', '2,000 drifting particles', 'excitons — quasiparticles of pure energy hopping between pigment molecules inside the protein'],
-      ['#a855f7', '18 curved trails', 'the energy pathways between chromophores, the pigment sites where an exciton can be'],
+      ['#a855f7', '18 orbiting circles', 'the energy pathways between chromophores, the pigment sites where an exciton can be'],
     ],
   },
   {
