@@ -642,6 +642,34 @@ input[type="color"]::-moz-color-swatch{border:none;border-radius:2px}
   color:rgba(255,255,255,0.5);
   flex:1;
 }
+.qora-about-note{
+  font-size:0.78rem;color:var(--qora-muted,rgba(255,255,255,0.5));
+  line-height:1.55;margin:6px 0 2px;max-width:720px
+}
+.qora-equation{
+  display:inline-block;font-family:ui-monospace,'JetBrains Mono',monospace;
+  font-size:0.8rem;color:#c9f2ff;background:rgba(0,212,255,0.07);
+  border:1px solid rgba(0,212,255,0.22);border-radius:8px;
+  padding:7px 12px;margin:8px 0;letter-spacing:0.01em
+}
+.qora-element-card{
+  border:1px solid rgba(255,255,255,0.08);border-radius:14px;
+  padding:16px 16px 14px;margin:6px 0 18px;max-width:760px;
+  background:rgba(255,255,255,0.02)
+}
+.qora-element-viz{
+  margin:12px 0 4px;border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;background:rgba(10,8,24,0.55);padding:6px
+}
+.qora-element-viz svg{display:block;width:100%;height:auto}
+.qora-logic{
+  margin-top:10px;border-left:2px solid rgba(123,97,255,0.45);
+  padding-left:14px;display:flex;flex-direction:column;gap:6px
+}
+.qora-logic-line{
+  font-size:0.76rem;color:rgba(255,255,255,0.62);line-height:1.55
+}
+.qora-logic-line::before{content:'▸ ';color:var(--qora-accent,#7b61ff)}
 .qora-guide-list{display:flex;flex-direction:column;gap:8px;max-width:640px}
 .qora-guide-row{display:flex;gap:14px;align-items:baseline}
 .qora-guide-key{
