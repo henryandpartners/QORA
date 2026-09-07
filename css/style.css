@@ -544,6 +544,54 @@ input[type="color"]::-moz-color-swatch{border:none;border-radius:2px}
 }
 .qora-ritual-actions{display:flex;gap:12px;justify-content:center}
 
+/* ── v3: quantum geometry + ritual explanation layer ── */
+.qora-q-intro{margin-bottom:36px;max-width:760px}
+.qora-q-intro-viz{
+  margin:14px 0 10px;border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;background:rgba(10,8,24,0.55);padding:10px
+}
+.qora-q-intro-viz svg{display:block;width:100%;height:auto}
+.qora-metric-expl{
+  font-size:0.7rem;color:rgba(255,255,255,0.42);
+  line-height:1.55;margin-top:8px;
+  border-top:1px solid rgba(255,255,255,0.06);padding-top:8px
+}
+.qora-chart-expl{
+  font-size:0.78rem;color:rgba(255,255,255,0.5);
+  line-height:1.65;margin-top:12px;max-width:720px
+}
+.qora-ritual-eq{margin:-16px auto 32px;max-width:640px;text-align:center}
+.qora-ritual-eq .qora-about-note{max-width:640px;margin:6px auto 0}
+.qora-qubit-ghost{
+  margin-top:10px;height:3px;border-radius:2px;
+  background:rgba(255,255,255,0.08);overflow:hidden
+}
+.qora-qubit-ghost-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,#7b61ff,#00d4ff);
+  transition:width 0.4s ease
+}
+.qora-qubit.off .qora-qubit-ghost-fill{background:#475569}
+.qora-qubit.on .qora-qubit-ghost-fill{background:linear-gradient(90deg,#00b894,#00e5a0)}
+.qora-ritual-meter{margin:-8px auto 30px;max-width:420px;text-align:center}
+.qora-ritual-meter-label{
+  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;
+  color:rgba(255,255,255,0.3);margin-bottom:8px
+}
+.qora-ritual-meter-bar{
+  height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden
+}
+.qora-ritual-meter-fill{
+  height:100%;width:100%;border-radius:2px;
+  background:linear-gradient(90deg,#00e5a0,#7b61ff);
+  transition:width 0.35s cubic-bezier(.4,0,.2,1)
+}
+.qora-ritual-meter-val{
+  font-family:'Space Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,0.45);margin-top:6px;letter-spacing:1px
+}
+.mono{font-family:'Space Mono',ui-monospace,monospace}
+
 /* ── v2: entrance stagger ───────────────────── */
 .qora-fade{
   opacity:0;

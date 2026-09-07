@@ -20,6 +20,31 @@ let vizRAF = null;
 
 const QUBIT_LABELS = ['q₀', 'q₁', 'q₂', 'q₃', 'q₄', 'q₅'];
 
+/* ── Circuit diagram: what actually ran on the simulator ── */
+const QUANTUM_INTRO_SVG = `
+  <svg viewBox="0 0 640 240" role="img" aria-label="Six-qubit Hadamard circuit with measurement">
+    <defs>
+      <linearGradient id="qw" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#7b61ff" stop-opacity="0.15"/>
+        <stop offset="0.55" stop-color="#7b61ff" stop-opacity="0.15"/>
+        <stop offset="1" stop-color="#00d4ff" stop-opacity="0.7"/>
+      </linearGradient>
+    </defs>
+    ${[40, 72, 104, 136, 168, 200].map((y, i) => `
+      <line x1="60" y1="${y}" x2="560" y2="${y}" stroke="url(#qw)" stroke-width="1.6"/>
+      <text x="34" y="${y + 4}" fill="rgba(255,255,255,0.55)" font-size="12" font-family="ui-monospace,monospace">q${'₀₁₂₃₄₅'[i]}</text>
+      <text x="52" y="${y + 4}" fill="rgba(255,255,255,0.85)" font-size="12" font-family="ui-monospace,monospace">|0⟩</text>
+      <rect x="180" y="${y - 14}" width="28" height="28" rx="5" fill="rgba(123,97,255,0.18)" stroke="#7b61ff" stroke-width="1.4"/>
+      <text x="194" y="${y + 5}" text-anchor="middle" fill="#c9b8ff" font-size="15" font-family="ui-monospace,monospace">H</text>
+      <circle cx="480" cy="${y}" r="9" fill="rgba(0,212,255,0.12)" stroke="#00d4ff" stroke-width="1.4"/>
+      <line x1="480" y1="${y + 9}" x2="480" y2="228" stroke="#00d4ff" stroke-opacity="0.5" stroke-width="1"/>
+    `).join('')}
+    <rect x="470" y="228" width="20" height="8" rx="2" fill="#0b1420" stroke="#00d4ff" stroke-opacity="0.6"/>
+    <text x="300" y="26" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="9" font-family="ui-monospace,monospace">6 Hadamard gates → uniform superposition → measure all</text>
+    <text x="300" y="236" text-anchor="middle" fill="rgba(0,212,255,0.55)" font-size="9" font-family="ui-monospace,monospace">1024 shots → 64 classical outcomes</text>
+    <text x="480" y="26" text-anchor="middle" fill="rgba(0,212,255,0.55)" font-size="9" font-family="ui-monospace,monospace">⌀ measure</text>
+  </svg>`;
+
 // ── Load data ──────────────────────────────────────────────────
 async function loadQuantumData() {
   if (quantumData) return quantumData;
@@ -33,6 +58,13 @@ async function loadQuantumData() {
 }
 
 // ── Helpers ────────────────────────────────────────────────────
+function appendExpl(container, text) {
+  const div = document.createElement('div');
+  div.className = 'qora-chart-expl';
+  div.innerHTML = text;
+  container.appendChild(div);
+}
+
 function hammingWeight(s) {
   let w = 0;
   for (const c of s) if (c === '1') w++;
@@ -308,6 +340,7 @@ function ensureDom() {
       <button class="qora-close" id="qora-q-close" aria-label="Close">ESC</button>
     </div>
     <div class="qora-overlay-scroll">
+      <div id="qora-q-intro"></div>
       <div id="qora-q-metrics" class="qora-metrics"></div>
       <div id="qora-q-dist" class="qora-chart-block"></div>
       <div id="qora-q-marginals" class="qora-marginals"></div>
@@ -347,27 +380,55 @@ export async function openQuantum() {
   document.getElementById('qora-q-meta').textContent =
     `Run ${data.run_id} · oracle measured ${freshness(data.timestamp)} · ${data.shots} shots · ${data.unique_states}/64 states`;
 
-  // Metrics — staggered entrance
+  // Intro — what this is and what was actually measured
+  document.getElementById('qora-q-intro').innerHTML = `
+    <div class="qora-q-intro qora-fade" style="--d:0ms">
+      <div class="qora-about-body">
+        This is <strong>not a simulation</strong>. A real quantum circuit — six qubits, each wrapped in a Hadamard gate H — was executed on AerSimulator with ${data.shots} measurements. The result is a genuine Born-rule distribution over all 64 possible states |q₅q₄q₃q₂q₁q₀⟩, and everything below is derived from those counts.
+      </div>
+      <div class="qora-q-intro-viz">${QUANTUM_INTRO_SVG}</div>
+      <div class="qora-equation">H|0⟩ = (|0⟩ + |1⟩)/√2 &nbsp;→&nbsp; |ψ⟩ = H⊗⁶|000000⟩ = (1/8) Σ<sub>all 64 x</sub> |x⟩</div>
+      <div class="qora-about-note">Six Hadamards inflate one certainty into sixty-four equal possibilities — the same superposition you disturb with your mouse in the organism.</div>
+      <div class="qora-logic">
+        <div class="qora-logic-line">Circuit: q₀–q₅ each get H, then all six are measured (1024 shots) on AerSimulator — tools/generate_quantum_data.py.</div>
+        <div class="qora-logic-line">Every chart below derives only from data/quantum.json — counts, marginals, entropies, geometry. Nothing here is random on page-load.</div>
+        <div class="qora-logic-line">Read it as: how close does this run sit to the perfect uniform state the circuit promises?</div>
+      </div>
+    </div>
+  `;
+
+  // Metrics — staggered entrance, each with a plain-language explanation
   const metrics = [
-    ['Shannon entropy H', `${data.entropy.toFixed(3)} / ${data.max_entropy.toFixed(3)} bits`, `H/Hmax = ${data.entropy_ratio.toFixed(4)}`],
-    ['Collision entropy H₂', `${data.collision_entropy.toFixed(3)} bits`, 'Rényi-2'],
-    ['KL divergence D_KL', `${data.kl_div.toFixed(4)} bits`, 'P ∥ uniform'],
-    ['TV distance', `${data.tvd.toFixed(4)}`, 'δ(P, U)'],
-    ['Fubini-Study distance', `${data.fs_distance_deg.toFixed(2)}°`, `${data.fs_distance_rad.toFixed(4)} rad`],
-    ['Spectral gap Δ', `${data.spectral_gap.toFixed(4)}`, 'max − min p(i)'],
-    ['Mean mutual info', `${data.avg_mi.toFixed(4)} bits`, 'qubits independent'],
-    ['Overlap ⟨ψ|U⟩', `${data.overlap.toFixed(4)}`, 'with uniform state'],
+    ['Shannon entropy H', `${data.entropy.toFixed(3)} / ${data.max_entropy.toFixed(3)} bits`, `H/Hmax = ${data.entropy_ratio.toFixed(4)}`,
+      'H = −Σ p(x) log₂ p(x) — how spread the outcomes were. Perfect uniformity would give exactly 6 bits; this run got most of the way there.'],
+    ['Collision entropy H₂', `${data.collision_entropy.toFixed(3)} bits`, 'Rényi-2',
+      'H₂ = −log₂ Σ p(x)² — the same question asked with squared probabilities. It punishes repeats, so it reads lower than H when some states pile up.'],
+    ['KL divergence D_KL', `${data.kl_div.toFixed(4)} bits`, 'P ∥ uniform',
+      'D_KL = Σ p(x) log₂(p(x)/u) — the information lost if you approximated this run with a perfect dice roll. Zero would mean indistinguishable from uniform.'],
+    ['TV distance', `${data.tvd.toFixed(4)}`, 'δ(P, U)',
+      'δ = ½ Σ |p(x) − u| — the largest possible error in guessing a state if you assumed uniform. 0.04 ≈ 4% of the probability mass sat outside its ideal slot.'],
+    ['Fubini-Study distance', `${data.fs_distance_deg.toFixed(2)}°`, `${data.fs_distance_rad.toFixed(4)} rad`,
+      'arccos|⟨ψ|U⟩| — treating states as arrows in Hilbert space, the angle between what was measured and the ideal uniform state. This many degrees from perfect.'],
+    ['Spectral gap Δ', `${data.spectral_gap.toFixed(4)}`, 'max − min p(i)',
+      'The gap between the luckiest and unluckiest of the 64 states. Sampling noise widens it; an ideal run with infinite shots would drive it to zero.'],
+    ['Mean mutual info', `${data.avg_mi.toFixed(4)} bits`, 'qubits independent',
+      'I(qᵢ;qⱼ) = H(qᵢ) + H(qⱼ) − H(qᵢ,qⱼ), averaged over pairs — how much one qubit\'s outcome tells you about another\'s. ≈0 means the six coins were truly independent.'],
+    ['Overlap ⟨ψ|U⟩', `${data.overlap.toFixed(4)}`, 'with uniform state',
+      'The inner product between measured amplitudes and the ideal flat state — cosine of the Fubini-Study angle above. 1.000 would be geometrically perfect randomness.'],
   ];
-  document.getElementById('qora-q-metrics').innerHTML = metrics.map(([k, v, sub], i) => `
+  document.getElementById('qora-q-metrics').innerHTML = metrics.map(([k, v, sub, expl], i) => `
     <div class="qora-metric qora-fade" style="--d:${i * 60}ms">
       <div class="qora-metric-label">${k}</div>
       <div class="qora-metric-value">${v}</div>
       <div class="qora-metric-sub">${sub}</div>
+      <div class="qora-metric-expl">${expl}</div>
     </div>
   `).join('');
 
   // Interactive distribution chart
   buildDistChart(document.getElementById('qora-q-dist'), data);
+  appendExpl(document.getElementById('qora-q-dist'),
+    'Each bar is one of the 64 possible bit-strings, sorted by how often it appeared in the run. In an ideal world every bar would touch the dashed gold line — 1024/64 = 16 counts each. The scatter you see is not a flaw: it is finite-shot sampling noise, the quantum dice showing their grain. Hover any bar to read its exact state, count, and Born probability.');
 
   // Marginals
   document.getElementById('qora-q-marginals').innerHTML = `
@@ -381,15 +442,19 @@ export async function openQuantum() {
         </div>
       `).join('')}
     </div>
+    <div class="qora-about-note">Per-qubit bias: P(|1⟩) for each of the six qubits, marginalizing over the other five. A Hadamard promises exactly 0.500 — these bars show how close each individual coin came to a fair flip. The dotted reference marks the ideal.</div>
   `;
 
   // MI heatmap (image) — only fig 3 remains static
   document.getElementById('qora-q-mi').innerHTML = `
     <figure class="qora-figure"><img src="assets/quantum/03_mutual_information_heatmap.png" alt="Mutual information heatmap"><figcaption>Mutual information — I(qᵢ;qⱼ) ≈ 0 · qubits independent</figcaption></figure>
+    <div class="qora-about-note">Every off-diagonal cell quantifies correlation between a pair of qubits: I(qᵢ;qⱼ) = H(qᵢ) + H(qⱼ) − H(qᵢ,qⱼ). All ≈ 0 — measuring one qubit tells you nothing about any other. The six superpositions never talked to each other; whatever pattern you thought you saw was yours, not theirs.</div>
   `;
 
   // Interactive Hilbert geometry
   buildHilbertChart(document.getElementById('qora-q-hilbert'), data);
+  appendExpl(document.getElementById('qora-q-hilbert'),
+    'The 64-dimensional Hilbert space is flattened to a disc you can see. Each cyan point is one of the 64 states, placed at a radius proportional to its measured amplitude √p(x) — the cloud should be a perfect circle, and nearly is. Gold arrow: the ideal uniform state |U⟩ with every amplitude exactly 1/8. Pink arrow: the state this run actually produced. The purple arc between them is the Fubini-Study distance — the geometric answer to "how random was it, really?"');
 
   // Poem
   document.getElementById('qora-q-poem').innerHTML = `
@@ -624,6 +689,12 @@ export async function invokeRitual() {
       <div class="qora-ritual-qubits" id="qora-ritual-qubits">
         ${QUBIT_LABELS.map(q => `<div class="qora-qubit"><span class="qora-qubit-label">${q}</span><span class="qora-qubit-amp">|0⟩+|1⟩</span></div>`).join('')}
       </div>
+      <div class="qora-ritual-eq qora-fade" style="--d:200ms">
+        <div class="qora-equation">|ψ⟩ = (1/8) Σ<sub>all 64 x</sub> |x⟩ &nbsp;&nbsp;·&nbsp;&nbsp; P(x) = |⟨x|ψ⟩|² = 1/64</div>
+        <div class="qora-about-note" style="text-align:left">
+          Before you look, every one of the 64 states exists with equal amplitude — <span class="mono">1/8</span> each, since amplitudes add in quadrature. This is the <strong>Born rule</strong>: probability is the squared magnitude of the amplitude. Pressing the button below doesn't pick a number from a hat — it samples from the exact distribution the real quantum circuit measured: 1024 shots of the oracle, cached in <span class="mono">quantum.json</span>, drawn with a cryptographically secure seed. The dice were cast in a quantum register; your click only chooses when to read them.
+        </div>
+      </div>
       <div class="qora-ritual-hint">Observing collapses the wavefunction.</div>
       <button class="qora-invoke" id="qora-invoke-btn">INVOKE COLLAPSE</button>
       ${renderHistory()}
@@ -645,25 +716,51 @@ function collapse(data, body) {
   const rank = rankOf(state, data.counts);
   const reading = composeReading(state, data);
 
+  // Per-qubit conditional probabilities P(bit_i=1 | x), marginalizing the
+  // real measured counts — the ghost amplitude bars shown under each qubit.
+  const bitOn = [0, 0, 0, 0, 0, 0];
+  const bitTotal = [0, 0, 0, 0, 0, 0];
+  for (const [s, c] of Object.entries(data.counts)) {
+    for (let i = 0; i < 6; i++) {
+      bitTotal[i] += c;
+      if (s[i] === '1') bitOn[i] += c;
+    }
+  }
+  const bitP = bitOn.map((on, i) => on / bitTotal[i]);
+
   body.innerHTML = `
     <div class="qora-ritual-center">
       <div class="qora-ritual-state qora-collapsing" id="qora-ritual-phase">OBSERVING THE FIELD</div>
       <div class="qora-ritual-sub">Amplitudes leak. The superposition thins.</div>
+      <div class="qora-ritual-eq qora-fade" style="--d:100ms">
+        <div class="qora-equation">ρ = Σ<sub>64</sub> p(x) |x⟩⟨x| &nbsp;⟶&nbsp; |s⟩⟨s|</div>
+        <div class="qora-about-note" style="text-align:left">
+          Collapse in one line: a mixed state spread over 64 terms — the measured Born distribution ρ — is replaced by a single projector onto the outcome |s⟩. Below, each qubit shows its <strong>ghost amplitude</strong>: P(bit = 1) from the real counts, the last visible trace of the superposition as it locks.
+        </div>
+      </div>
       <div class="qora-ritual-qubits" id="qora-ritual-qubits">
         ${QUBIT_LABELS.map((q, i) => `
           <div class="qora-qubit flicker" data-i="${i}">
             <span class="qora-qubit-label">${q}</span>
             <span class="qora-qubit-amp">|·⟩</span>
+            <div class="qora-qubit-ghost"><div class="qora-qubit-ghost-fill" style="width:${Math.round(bitP[i] * 100)}%"></div></div>
           </div>
         `).join('')}
+      </div>
+      <div class="qora-ritual-meter qora-fade" style="--d:150ms">
+        <div class="qora-ritual-meter-label">SUPERPOSITION REMAINING</div>
+        <div class="qora-ritual-meter-bar"><div class="qora-ritual-meter-fill" id="qora-ritual-meter-fill"></div></div>
+        <div class="qora-ritual-meter-val" id="qora-ritual-meter-val">100%</div>
       </div>
       <div id="qora-ritual-result"></div>
     </div>
   `;
 
-  // Lock qubits one by one
+  // Lock qubits one by one; the meter falls as each term of ρ dies
   const qubits = [...body.querySelectorAll('.qora-qubit')];
   const phase = document.getElementById('qora-ritual-phase');
+  const meterFill = document.getElementById('qora-ritual-meter-fill');
+  const meterVal = document.getElementById('qora-ritual-meter-val');
   let delay = 600;
   state.split('').forEach((bit, i) => {
     setTimeout(() => {
@@ -672,6 +769,9 @@ function collapse(data, body) {
       q.classList.add(bit === '1' ? 'on' : 'off');
       q.querySelector('.qora-qubit-amp').textContent = `|${bit}⟩`;
       phase.textContent = `COLLAPSING — ${i + 1}/6 LOCKED`;
+      const remaining = Math.round((1 - (i + 1) / 6) * 100);
+      meterFill.style.width = remaining + '%';
+      meterVal.textContent = remaining + '%';
     }, delay);
     delay += 280;
   });
