@@ -516,7 +516,18 @@ function buildDistChart(container, data) {
       if (i === hoverIdx) color = '#ffffff';
       c.fillStyle = color;
       c.globalAlpha = hoverIdx === i ? 1 : 0.75;
-      c.fillRect(i * bw + 1, base - h, bw - 2, h);
+      const bx = i * bw + 1, bwid = bw - 2;
+      // glow
+      c.save();
+      c.shadowColor = color;
+      c.shadowBlur = hoverIdx === i ? 14 : 7;
+      c.fillRect(bx, base - h, bwid, h);
+      c.restore();
+      // cap highlight
+      if (h > 2) {
+        c.fillStyle = hoverIdx === i ? '#ffffff' : 'rgba(255,255,255,0.55)';
+        c.fillRect(bx, base - h, bwid, Math.min(1.5, h));
+      }
     }
     c.globalAlpha = 1;
     // uniform line
@@ -545,7 +556,7 @@ function buildDistChart(container, data) {
     draw(idx);
     const s = sorted[idx];
     tip.style.display = 'block';
-    tip.textContent = `|${s}⟩  ·  ${counts[s]}×  ·  p = ${(counts[s] / data.shots * 100).toFixed(2)}%`;
+    tip.textContent = `|${s}⟩  ·  ${counts[idx]}×  ·  p = ${(counts[idx] / data.shots * 100).toFixed(2)}%`;
     const x = Math.min(Math.max(idx * bw + bw / 2, 70), W - 70);
     tip.style.left = x + 'px';
   });
@@ -591,21 +602,33 @@ function buildHilbertChart(container, data) {
     c.clearRect(0, 0, W, H);
     const t = now / 1000;
 
+    // ambient halo
+    const halo = c.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.35);
+    halo.addColorStop(0, 'rgba(123,97,255,0.10)');
+    halo.addColorStop(1, 'rgba(123,97,255,0)');
+    c.fillStyle = halo;
+    c.fillRect(0, 0, W, H);
+
     // grid rings
     c.strokeStyle = 'rgba(255,255,255,0.07)';
     for (let r = R / 4; r <= R; r += R / 4) {
       c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke();
     }
 
-    // 64 amplitude points, slowly rotating, shimmering
+    // 64 amplitude points, slowly rotating, shimmering, with glow
     for (let i = 0; i < 64; i++) {
       const ang = (i / 64) * Math.PI * 2 + t * 0.05;
       const rr = (amps[i] / maxAmp) * R;
       const shim = 0.35 + 0.35 * Math.sin(t * 1.4 + i * 0.7);
+      const pulse = 1.6 + 0.7 * Math.sin(t * 1.4 + i * 0.7);
+      c.save();
+      c.shadowColor = 'rgba(0,212,255,0.8)';
+      c.shadowBlur = 8;
       c.fillStyle = `rgba(0,212,255,${shim})`;
       c.beginPath();
-      c.arc(cx + Math.cos(ang) * rr, cy - Math.sin(ang) * rr, 2, 0, Math.PI * 2);
+      c.arc(cx + Math.cos(ang) * rr, cy - Math.sin(ang) * rr, pulse, 0, Math.PI * 2);
       c.fill();
+      c.restore();
     }
 
     // ideal arrow |U>
@@ -617,9 +640,13 @@ function buildHilbertChart(container, data) {
     arrow(c, cx, cy, px, py, '#ff6b9d');
 
     // FS arc + label
+    c.save();
     c.strokeStyle = '#a855f7';
+    c.shadowColor = 'rgba(168,85,247,0.7)';
+    c.shadowBlur = 10;
     c.lineWidth = 2;
     c.beginPath(); c.arc(cx, cy, R * 0.32, -theta, 0); c.stroke();
+    c.restore();
     c.lineWidth = 1;
     c.fillStyle = '#a855f7';
     c.font = '11px "Space Mono", monospace';
@@ -687,7 +714,7 @@ export async function invokeRitual() {
       <div class="qora-ritual-state">SIX QUBITS IN SUPERPOSITION</div>
       <div class="qora-ritual-sub">The field holds all 64 outcomes at once — oracle measured ${freshness(data.timestamp)}.</div>
       <div class="qora-ritual-qubits" id="qora-ritual-qubits">
-        ${QUBIT_LABELS.map(q => `<div class="qora-qubit"><span class="qora-qubit-label">${q}</span><span class="qora-qubit-amp">|0⟩+|1⟩</span></div>`).join('')}
+        ${QUBIT_LABELS.map(q => `<div class="qora-qubit"><span class="qora-qubit-label">${q}</span><span class="qora-qubit-orb"><span class="qora-qubit-amp">|0⟩+|1⟩</span></span></div>`).join('')}
       </div>
       <div class="qora-ritual-eq qora-fade" style="--d:200ms">
         <div class="qora-equation">|ψ⟩ = (1/8) Σ<sub>all 64 x</sub> |x⟩ &nbsp;&nbsp;·&nbsp;&nbsp; P(x) = |⟨x|ψ⟩|² = 1/64</div>
@@ -742,7 +769,7 @@ function collapse(data, body) {
         ${QUBIT_LABELS.map((q, i) => `
           <div class="qora-qubit flicker" data-i="${i}">
             <span class="qora-qubit-label">${q}</span>
-            <span class="qora-qubit-amp">|·⟩</span>
+            <span class="qora-qubit-orb"><span class="qora-qubit-amp">|·⟩</span></span>
             <div class="qora-qubit-ghost"><div class="qora-qubit-ghost-fill" style="width:${Math.round(bitP[i] * 100)}%"></div></div>
           </div>
         `).join('')}
