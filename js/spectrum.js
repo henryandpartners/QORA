@@ -116,6 +116,8 @@ function applyScaffold() {
       core: hexToInt(els.core),
     });
   }
+  if (ctx && ctx.atmosphere) ctx.atmosphere.setAtmosphereColor(hexToInt(els.ring));
+  if (ctx && ctx.chromophores) ctx.chromophores.setChromophoreColor(hexToInt(els.core));
 }
 
 function applyTrails() {
@@ -335,6 +337,8 @@ function applyTheme(theme) {
     ctx.particleSystem.recolor(theme.gradient, theme.decoRGB);
     ctx.scaffold.applyThemeColors(theme.scaffold);
     ctx.trails.setTrailTheme({ hueMin: theme.trailHue.min, hueRange: theme.trailHue.range, decoHue: theme.decoHue });
+    if (ctx.atmosphere) ctx.atmosphere.setAtmosphereColor(theme.scaffold.ring);
+    if (ctx.chromophores) ctx.chromophores.setChromophoreColor(theme.scaffold.core);
   }
 
   // Sync element state + pickers + background + accents

@@ -110,10 +110,15 @@ export function createParticleSystem(scene) {
         float glow = exp(-d * 6.0);
         float alpha = glow * vAlpha;
 
+        // Diffraction ring — faint quantum halo around each exciton
+        float ring = smoothstep(0.46, 0.34, d) * smoothstep(0.20, 0.32, d);
+        alpha += ring * 0.28 * vAlpha;
+
         // Inner core is brighter
         vec3 coreColor = vColor * 1.5;
         vec3 edgeColor = vColor * 0.3;
         vec3 finalColor = mix(edgeColor, coreColor, glow);
+        finalColor += vColor * ring * 0.8;
 
         gl_FragColor = vec4(finalColor, alpha);
       }

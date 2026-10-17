@@ -3,10 +3,13 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createScaffold } from './scaffold.js';
 import { createParticleSystem } from './particles.js';
 import { createExcitonTrails } from './trails.js';
 import { createDust } from './dust.js';
+import { createAtmosphere } from './atmosphere.js';
+import { createChromophores } from './chromophores.js';
 import { setupUI } from './ui.js';
 import { setupSpectrum } from './spectrum.js';
 
@@ -37,6 +40,46 @@ const bloomPass = new UnrealBloomPass(
   0.12   // threshold
 );
 composer.addPass(bloomPass);
+
+// ── Finishing pass: subtle chromatic aberration at edges + film grain ──
+const finishPass = new ShaderPass({
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: 0 },
+    uAberration: { value: 0.0022 },
+    uGrain: { value: 0.045 },
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse;
+    uniform float uTime;
+    uniform float uAberration;
+    uniform float uGrain;
+    varying vec2 vUv;
+    void main() {
+      vec2 dir = vUv - 0.5;
+      float r2 = dot(dir, dir);
+      // chromatic split grows toward the corners
+      vec2 off = dir * uAberration * (0.4 + r2 * 3.0);
+      vec4 col;
+      col.r = texture2D(tDiffuse, vUv + off).r;
+      col.g = texture2D(tDiffuse, vUv).g;
+      col.b = texture2D(tDiffuse, vUv - off).b;
+      col.a = 1.0;
+      // animated film grain
+      float n = fract(sin(dot(vUv * (1.0 + fract(uTime)), vec2(12.9898, 78.233)) + uTime) * 43758.5453);
+      col.rgb += (n - 0.5) * uGrain;
+      gl_FragColor = col;
+    }
+  `,
+});
+composer.addPass(finishPass);
 composer.addPass(new OutputPass());
 
 // ── Lighting (subtle) ──────────────────────
@@ -58,6 +101,12 @@ const { trails, updateTrails, setTrailTheme } = createExcitonTrails(scene);
 // ── Background dust (depth layer) ──────────
 const { updateDust } = createDust(scene);
 
+// ── Fresnel atmosphere shell ───────────────
+const { updateAtmosphere, setAtmosphereColor } = createAtmosphere(scene);
+
+// ── FMO chromophore network (7 BChl sites) ─
+const { updateChromophores, setChromophoreColor } = createChromophores(scene);
+
 // ── UI ─────────────────────────────────────
 const { updateCoherenceUI, setMode } = setupUI();
 
@@ -69,6 +118,8 @@ setupSpectrum({
   particleSystem,
   scaffold: { applyThemeColors },
   trails: { setTrailTheme },
+  atmosphere: { setAtmosphereColor },
+  chromophores: { setChromophoreColor },
 });
 
 // ── State ──────────────────────────────────
@@ -153,6 +204,11 @@ let camRadius = 8;
 let camRadiusTarget = 8;
 const camParallax = new THREE.Vector2(); // smoothed mouse offset
 
+// Intro dolly: camera eases in from far away over the first ~4 seconds
+const INTRO_DOLLY = 4.0;
+const camRadiusIntro = 17;
+camRadius = camRadiusIntro;
+
 window.addEventListener('wheel', (e) => {
   camRadiusTarget = THREE.MathUtils.clamp(
     camRadiusTarget + e.deltaY * 0.005,
@@ -195,9 +251,11 @@ function animate() {
   points.geometry.attributes.color.needsUpdate = true;
   points.geometry.attributes.size.needsUpdate = true;
 
-  // Update trails + dust
+  // Update trails + dust + atmosphere + chromophore network
   updateTrails(time, coherence, currentMode, camera);
   updateDust(time);
+  updateAtmosphere(time, coherence);
+  updateChromophores(time, coherence);
 
   // Scaffold: organic breathing + rotation
   const breathe = 1 + Math.sin(time * 0.5) * 0.015 * (0.3 + coherence * 0.7);
@@ -215,7 +273,14 @@ function animate() {
 
   // Camera: slow orbit (faster + wilder in decoherence)
   camTheta += currentMode === 2 ? 0.0016 : 0.0005;
-  camRadius += (camRadiusTarget - camRadius) * 0.06;
+  // Intro dolly-in, then follow scroll target
+  if (time < INTRO_DOLLY) {
+    const k = time / INTRO_DOLLY;
+    const eased = 1 - Math.pow(1 - k, 3); // ease-out cubic
+    camRadius = camRadiusIntro + (camRadiusTarget - camRadiusIntro) * eased;
+  } else {
+    camRadius += (camRadiusTarget - camRadius) * 0.06;
+  }
   const px = mouseActive ? mouse.x : 0;
   const py = mouseActive ? mouse.y : 0;
   camParallax.x += (px - camParallax.x) * 0.03;
@@ -231,6 +296,10 @@ function animate() {
   // Bloom: hotter and throbbing as coherence drops
   bloomPass.strength =
     0.7 + (1 - coherence) * 0.9 + Math.sin(time * 2.2) * 0.06 * (1 - coherence);
+
+  // Finish pass: grain constant, aberration spikes with decoherence
+  finishPass.uniforms.uTime.value = time;
+  finishPass.uniforms.uAberration.value = 0.0022 + (1 - coherence) * 0.004;
 
   // Update shader uniforms
   points.material.uniforms.uTime.value = time;
