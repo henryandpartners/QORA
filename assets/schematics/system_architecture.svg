@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" style="background:#0a0c10; font-family:'JetBrains Mono', 'SF Pro Display', -apple-system, sans-serif;">
+  <defs>
+    <linearGradient id="cyanGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00e5a0" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#00a8ff" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7b61ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ff007f" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Title Block -->
+  <rect x="40" y="30" width="1120" height="70" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="65" y="65" fill="#00e5a0" font-size="20" font-weight="700" letter-spacing="1.5">QORA-1 PHYSICAL DEVICE ARCHITECTURE</text>
+  <text x="65" y="86" fill="#8b949e" font-size="12">QUANTUM ORGANIC RESONANCE APPARATUS • SYSTEM BLOCK DIAGRAM &amp; SIGNAL PIPELINE</text>
+  <text x="1050" y="65" fill="#58a6ff" font-size="12" text-anchor="end">SPEC V1.0</text>
+  <text x="1050" y="84" fill="#8b949e" font-size="11" text-anchor="end">HENRY TAN / FATHOMERS</text>
+
+  <!-- COL 1: SENSORY & OBSERVER INTERACTION (LEFT) -->
+  <g transform="translate(40, 130)">
+    <rect width="280" height="630" rx="8" fill="url(#cardGrad)" stroke="#30363d" stroke-width="1"/>
+    <rect x="0" y="0" width="280" height="40" rx="8" fill="#1f242c"/>
+    <text x="20" y="26" fill="#58a6ff" font-size="13" font-weight="700">1. SENSORY &amp; QUANTUM SENSORS</text>
+
+    <!-- Card 1.1: VL53L8CX ToF -->
+    <g transform="translate(15, 60)">
+      <rect width="250" height="120" rx="6" fill="#0f141c" stroke="#388bfd" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">VL53L8CX 8x8 ToF Sensor</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Multizone Spatial Presence (0–3.5m)</text>
+      <text x="15" y="65" fill="#00e5a0" font-size="11">Detects observer proximity &amp; hand velocity</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">→ Triggers Observer Effect / Decoherence</text>
+      <text x="15" y="105" fill="#58a6ff" font-size="10">Bus: I2C (0x52) @ 400kHz</text>
+    </g>
+
+    <!-- Card 1.2: AS7341 Multi-Spectral -->
+    <g transform="translate(15, 200)">
+      <rect width="250" height="135" rx="6" fill="#0f141c" stroke="#388bfd" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">AS7341 11-Channel Spectrometer</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Bio-Fluorescence &amp; Absorption</text>
+      <text x="15" y="65" fill="#00e5a0" font-size="11">Monitors 415nm–680nm + NIR bands</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">F4 (515nm), F7 (630nm), F8 (680nm Chl-a)</text>
+      <text x="15" y="102" fill="#8b949e" font-size="10">Stokes shift verification (405nm → 670nm)</text>
+      <text x="15" y="120" fill="#58a6ff" font-size="10">Bus: I2C (0x39) @ 400kHz</text>
+    </g>
+
+    <!-- Card 1.3: Galvanic Touch Ring -->
+    <g transform="translate(15, 355)">
+      <rect width="250" height="110" rx="6" fill="#0f141c" stroke="#d29922" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">Brass Resonator Touch Ring</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Direct Galvanic / Capacitive Coupling</text>
+      <text x="15" y="65" fill="#d29922" font-size="11">Detects visitor direct physical touch</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">Grounds human electrical charge into circuit</text>
+      <text x="15" y="100" fill="#d29922" font-size="10">Pin: ESP32-S3 Touch Sensor T1 (GPIO 1)</text>
+    </g>
+
+    <!-- Card 1.4: Biological Sample -->
+    <g transform="translate(15, 485)">
+      <rect width="250" height="120" rx="6" fill="#0f141c" stroke="#238636" stroke-width="1"/>
+      <text x="15" y="25" fill="#2ea043" font-size="13" font-weight="600">Quartz Bio-Reaction Cuvette</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Living Chlorophyll-a / Spirulina Extract</text>
+      <text x="15" y="65" fill="#ffffff" font-size="11">Photosynthetic electronic complex</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">Room-temp natural exciton carrier</text>
+      <text x="15" y="105" fill="#2ea043" font-size="10">Optical path: 25mm dia x 95mm high</text>
+    </g>
+  </g>
+
+  <!-- COL 2: CORE PROCESSOR & QUANTUM SIMULATOR (CENTER) -->
+  <g transform="translate(360, 130)">
+    <rect width="480" height="630" rx="8" fill="url(#cardGrad)" stroke="#30363d" stroke-width="1"/>
+    <rect x="0" y="0" width="480" height="40" rx="8" fill="#1f242c"/>
+    <text x="20" y="26" fill="#00e5a0" font-size="13" font-weight="700">2. COMPUTE CORE &amp; EXCITON DYNAMICS ENGINE</text>
+
+    <!-- ESP32-S3 Brain Box -->
+    <g transform="translate(25, 60)">
+      <rect width="430" height="260" rx="6" fill="#0d1117" stroke="#00e5a0" stroke-width="1.5"/>
+      <text x="20" y="30" fill="#00e5a0" font-size="16" font-weight="700">ESP32-S3 Dual-Core (LX7 @ 240MHz)</text>
+      <text x="20" y="50" fill="#8b949e" font-size="11">16MB Flash • 8MB Octal PSRAM • WiFi / BLE 5.0</text>
+
+      <line x1="20" y1="65" x2="410" y2="65" stroke="#30363d" stroke-width="1"/>
+
+      <!-- Core 0 -->
+      <rect x="20" y="80" width="185" height="150" rx="4" fill="#161b22" stroke="#30363d"/>
+      <text x="30" y="102" fill="#58a6ff" font-size="12" font-weight="600">Core 0: Physical I/O &amp; Comms</text>
+      <text x="30" y="122" fill="#c9d1d9" font-size="10">• I2C Master @ 400kHz</text>
+      <text x="30" y="138" fill="#c9d1d9" font-size="10">• AS7341 Spectrometry Read</text>
+      <text x="30" y="154" fill="#c9d1d9" font-size="10">• VL53L8CX 8x8 Spatial Matrix</text>
+      <text x="30" y="170" fill="#c9d1d9" font-size="10">• WebSocket Client to Qiskit Server</text>
+      <text x="30" y="186" fill="#c9d1d9" font-size="10">• Capacitive Touch Interrupts</text>
+      <text x="30" y="205" fill="#8b949e" font-size="10">Target rate: 100 Hz</text>
+
+      <!-- Core 1 -->
+      <rect x="225" y="80" width="185" height="150" rx="4" fill="#161b22" stroke="#30363d"/>
+      <text x="235" y="102" fill="#00e5a0" font-size="12" font-weight="600">Core 1: Quantum &amp; Haptics</text>
+      <text x="235" y="122" fill="#c9d1d9" font-size="10">• Lindblad Master Eq (24 nodes)</text>
+      <text x="235" y="138" fill="#c9d1d9" font-size="10">• Exciton Wavepacket Hopping</text>
+      <text x="235" y="154" fill="#c9d1d9" font-size="10">• Decoherence Cascade Engine</text>
+      <text x="235" y="170" fill="#c9d1d9" font-size="10">• DMA Neopixel Driver (24 Nodes)</text>
+      <text x="235" y="186" fill="#c9d1d9" font-size="10">• I2S Phonon Audio Synth (40Hz)</text>
+      <text x="235" y="205" fill="#8b949e" font-size="10">Frame rate: 60 FPS locked</text>
+    </g>
+
+    <!-- Edge Quantum Server Link -->
+    <g transform="translate(25, 340)">
+      <rect width="430" height="120" rx="6" fill="#0f141c" stroke="#7b61ff" stroke-width="1"/>
+      <text x="20" y="26" fill="#bc8cff" font-size="13" font-weight="600">Edge Quantum Co-Processor (Qiskit / AerSimulator)</text>
+      <text x="20" y="46" fill="#8b949e" font-size="11">Runs 6-Qubit Superposition &amp; Fubini-Study Metric Tensor</text>
+      <text x="20" y="68" fill="#c9d1d9" font-size="11">Pushes state density matrix &amp; entropy ratio to device via WebSocket</text>
+      <text x="20" y="88" fill="#7b61ff" font-size="11">Falls back seamlessly to internal embedded 24-state Markov-Lindblad</text>
+      <text x="20" y="106" fill="#8b949e" font-size="10">Latency: &lt;15ms over local 5GHz WiFi / WSS</text>
+    </g>
+
+    <!-- Power & Conditioning Unit -->
+    <g transform="translate(25, 480)">
+      <rect width="430" height="125" rx="6" fill="#0f141c" stroke="#30363d" stroke-width="1"/>
+      <text x="20" y="25" fill="#f0883e" font-size="13" font-weight="600">Power Management &amp; Noise Isolation</text>
+      <text x="20" y="45" fill="#8b949e" font-size="11">USB-C PD 3.0 (5V / 3A, 15W Max Draw)</text>
+      <text x="20" y="68" fill="#c9d1d9" font-size="11">• AP2112K-3.3 ultra-low noise LDO for AS7341 spectrometer</text>
+      <text x="20" y="88" fill="#c9d1d9" font-size="11">• Dedicated ground planes separating I2S audio transducer and I2C sensors</text>
+      <text x="20" y="108" fill="#c9d1d9" font-size="11">• 1000uF electrolytic reservoir cap for tactile transient peaks</text>
+    </g>
+  </g>
+
+  <!-- COL 3: PHYSICAL ACTUATORS & EXCITON DISPLAY (RIGHT) -->
+  <g transform="translate(880, 130)">
+    <rect width="280" height="630" rx="8" fill="url(#cardGrad)" stroke="#30363d" stroke-width="1"/>
+    <rect x="0" y="0" width="280" height="40" rx="8" fill="#1f242c"/>
+    <text x="20" y="26" fill="#bc8cff" font-size="13" font-weight="700">3. PHYSICAL ACTUATORS</text>
+
+    <!-- Card 3.1: 24 FMO Light Guides -->
+    <g transform="translate(15, 60)">
+      <rect width="250" height="135" rx="6" fill="#0f141c" stroke="#00e5a0" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">24 FMO Chromophore Array</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Fiber-Optic Light Guide Lattice</text>
+      <text x="15" y="65" fill="#00e5a0" font-size="11">24 Addressable SK6812 RGBW nodes</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">Coupled into 1.0mm PMMA optical fibers</text>
+      <text x="15" y="102" fill="#8b949e" font-size="10">Positions mapped to 3ENI PDB structure</text>
+      <text x="15" y="120" fill="#00e5a0" font-size="10">Cyan (coherent) → Crimson (decoherent)</text>
+    </g>
+
+    <!-- Card 3.2: 405nm Violet Laser -->
+    <g transform="translate(15, 215)">
+      <rect width="250" height="120" rx="6" fill="#0f141c" stroke="#7b61ff" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">405nm Optical Excitation</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Narrow-Band Violet Laser Diode</text>
+      <text x="15" y="65" fill="#bc8cff" font-size="11">100mW @ 405nm UV-Violet (Soret band)</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">Focused through quartz cuvette base</text>
+      <text x="15" y="105" fill="#bc8cff" font-size="10">PWM modulated for safe dynamic intensity</text>
+    </g>
+
+    <!-- Card 3.3: Dayton Audio Haptic Transducer -->
+    <g transform="translate(15, 355)">
+      <rect width="250" height="130" rx="6" fill="#0f141c" stroke="#f0883e" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">Dayton Audio DAEX25 Transducer</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Phonon Bath Tactile Resonator</text>
+      <text x="15" y="65" fill="#f0883e" font-size="11">Coupled to aluminum resonance deck</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">40Hz Gamma frequency continuous drone</text>
+      <text x="15" y="102" fill="#8b949e" font-size="10">Simulates biological thermal phonon bath</text>
+      <text x="15" y="118" fill="#f0883e" font-size="10">Driven by MAX98357A I2S Class D Amp</text>
+    </g>
+
+    <!-- Card 3.4: Ambient Base Aura -->
+    <g transform="translate(15, 500)">
+      <rect width="250" height="105" rx="6" fill="#0f141c" stroke="#30363d" stroke-width="1"/>
+      <text x="15" y="25" fill="#ffffff" font-size="13" font-weight="600">Ambient Aura Base Ring</text>
+      <text x="15" y="44" fill="#8b949e" font-size="11">Pedestal Reflection Illumination</text>
+      <text x="15" y="65" fill="#8b949e" font-size="10">16 Neopixel halo washing the tabletop</text>
+      <text x="15" y="85" fill="#8b949e" font-size="10">Reflects global system coherence level</text>
+    </g>
+  </g>
+
+  <!-- SIGNAL BUS LINES -->
+  <!-- Sensor to Core -->
+  <path d="M 320 220 L 360 220" stroke="#388bfd" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <path d="M 320 320 L 360 320" stroke="#388bfd" stroke-width="2" fill="none"/>
+  <path d="M 320 420 L 360 420" stroke="#d29922" stroke-width="2" fill="none"/>
+
+  <!-- Core to Actuators -->
+  <path d="M 840 220 L 880 220" stroke="#00e5a0" stroke-width="2" fill="none"/>
+  <path d="M 840 320 L 880 320" stroke="#7b61ff" stroke-width="2" fill="none"/>
+  <path d="M 840 430 L 880 430" stroke="#f0883e" stroke-width="2" fill="none"/>
+</svg>

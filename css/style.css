@@ -328,6 +328,18 @@ input[type="color"]::-moz-color-swatch{border:none;border-radius:2px}
   background:rgba(0,229,160,0.1);
   box-shadow:0 0 18px rgba(0,229,160,0.2);
 }
+.qora-menu-btn.device{
+  border-color:rgba(0,212,255,0.35);
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+}
+.qora-menu-btn.device:hover{
+  border-color:#00d4ff;
+  color:#fff;
+  background:rgba(0,212,255,0.12);
+  box-shadow:0 0 18px rgba(0,212,255,0.25);
+}
 @media(max-width:768px){
   #qora-menu{bottom:16px;right:16px;flex-direction:column;gap:8px}
 }

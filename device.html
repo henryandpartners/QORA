@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QORA-1 — Physical Apparatus & Engineering Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-space: #050510;
+    --bg-panel: rgba(10, 10, 24, 0.88);
+    --bg-card: rgba(18, 18, 38, 0.7);
+    --border-dim: rgba(255, 255, 255, 0.1);
+    --border-bright: rgba(123, 97, 255, 0.4);
+    --accent-cyan: #00e5a0;
+    --accent-blue: #00d4ff;
+    --accent-purple: #7b61ff;
+    --accent-ruby: #ff0055;
+    --accent-gold: #e5c07b;
+    --text-main: #f0f4f8;
+    --text-muted: #8b949e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-space);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ─────────────────────────────────────── */
+  header {
+    height: 54px;
+    background: rgba(5, 5, 16, 0.95);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+  .brand span { color: var(--accent-purple); font-weight: 700; }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-item {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    transition: all 0.25s ease;
+  }
+  .nav-item:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .nav-item.active {
+    color: var(--accent-cyan);
+    border-color: rgba(0, 229, 160, 0.4);
+    background: rgba(0, 229, 160, 0.08);
+  }
+
+  /* ── Main Layout ────────────────────────────────── */
+  #app-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 440px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── 3D Viewport ────────────────────────────────── */
+  #viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #0d0d24 0%, #050510 85%);
+  }
+  #webgl-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ── Viewport Overlays ─────────────────────────── */
+  .viewport-overlay {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .viewport-overlay * { pointer-events: auto; }
+
+  #hud-top-left {
+    top: 20px;
+    left: 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    backdrop-filter: blur(12px);
+    border-radius: 4px;
+    padding: 16px;
+    width: 280px;
+  }
+  .hud-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent-blue);
+    margin-bottom: 4px;
+  }
+  .hud-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .coherence-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .coherence-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    transition: color 0.3s ease;
+  }
+  .status-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(0, 229, 160, 0.15);
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+  .status-tag.collapsed {
+    background: rgba(255, 0, 85, 0.2);
+    border-color: var(--accent-ruby);
+    color: var(--accent-ruby);
+  }
+
+  .coherence-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  #coherence-fill-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--accent-cyan);
+    transition: width 0.1s linear, background-color 0.3s ease;
+  }
+
+  /* Sliders */
+  .control-group {
+    margin-bottom: 12px;
+  }
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 6px;
+  }
+  .control-val { color: var(--text-main); }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent-cyan);
+    cursor: pointer;
+  }
+
+  #hud-bottom {
+    bottom: 20px;
+    left: 20px;
+    right: 460px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .hud-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hud-btn:hover {
+    color: #fff;
+    border-color: var(--accent-purple);
+    background: rgba(123, 97, 255, 0.15);
+  }
+  .hud-btn.active {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    background: rgba(0, 229, 160, 0.12);
+  }
+
+  /* ── Side Dossier Panel ─────────────────────────── */
+  #dossier-panel {
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-dim);
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .dossier-tabs {
+    display: flex;
+    background: rgba(5, 5, 16, 0.6);
+    border-bottom: 1px solid var(--border-dim);
+    overflow-x: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 14px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+  .tab-btn.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+    background: rgba(0, 212, 255, 0.06);
+  }
+
+  .dossier-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Tab Typography & Components */
+  h2.dossier-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  p.dossier-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .spec-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+  .spec-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-purple);
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .spec-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+  }
+  .spec-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* Schematic Thumbnails */
+  .schematic-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .schematic-box img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 2px;
+    margin: 10px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #020208;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .schematic-box img:hover {
+    border-color: var(--accent-cyan);
+    transform: scale(1.01);
+  }
+
+  /* BOM Table */
+  table.bom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-bottom: 20px;
+  }
+  table.bom-table th, table.bom-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-dim);
+  }
+  table.bom-table th {
+    font-family: 'Space Mono', monospace;
+    color: var(--accent-blue);
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  table.bom-table td.cost {
+    font-family: 'Space Mono', monospace;
+    color: var(--accent-gold);
+  }
+
+  /* Code Blocks */
+  pre.code-block {
+    background: #020208;
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    padding: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    color: #c9d1d9;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(123, 97, 255, 0.18);
+    border: 1px solid var(--accent-purple);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 10px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  .action-btn:hover {
+    background: var(--accent-purple);
+    box-shadow: 0 0 20px rgba(123, 97, 255, 0.4);
+  }
+  .action-btn.green {
+    background: rgba(0, 229, 160, 0.15);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+  .action-btn.green:hover {
+    background: var(--accent-cyan);
+    color: #050510;
+    box-shadow: 0 0 20px rgba(0, 229, 160, 0.4);
+  }
+
+  /* Modal Lightbox for Schematics */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  #lightbox.active { display: flex; }
+  #lightbox-img {
+    max-width: 90vw;
+    max-height: 85vh;
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 0 40px rgba(123, 97, 255, 0.3);
+    border-radius: 4px;
+    background: #020208;
+  }
+  #lightbox-close {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    #app-container { grid-template-columns: 1fr; }
+    #dossier-panel { display: none; }
+    #hud-bottom { right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>QORA</span> — PHYSICAL APPARATUS STUDY
+  </div>
+  <nav class="nav-links">
+    <a href="index.html" class="nav-item">← SIMULATION</a>
+    <a href="journey.html" class="nav-item">THE DESCENT</a>
+    <a href="device.html" class="nav-item active">PHYSICAL DEVICE</a>
+  </nav>
+</header>
+
+<div id="app-container">
+  <!-- 3D Interactive WebGL Viewport -->
+  <div id="viewport">
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Top Left HUD -->
+    <div class="viewport-overlay" id="hud-top-left">
+      <div class="hud-badge">QORA-1 INSTALLATION ARTIFACT</div>
+      <div class="hud-title">COHERENCE DYNAMICS</div>
+      <div class="coherence-display">
+        <span class="coherence-val" id="coherence-val-display">100%</span>
+        <span class="status-tag" id="status-tag-display">COHERENT</span>
+      </div>
+      <div class="coherence-progress-bar">
+        <div id="coherence-fill-bar"></div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>EXPLODED STACKUP</span>
+          <span class="control-val" id="val-exploded-text">0%</span>
+        </div>
+        <input type="range" id="slider-exploded" min="0" max="100" value="0">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>OBSERVER PROXIMITY</span>
+          <span class="control-val" id="val-observer-text">2.50 m</span>
+        </div>
+        <input type="range" id="slider-observer" min="10" max="300" value="250">
+      </div>
+
+      <div class="control-group" style="margin-bottom:0;">
+        <div class="control-header">
+          <span>INSPECT ASSEMBLY</span>
+        </div>
+        <select id="select-focus-part" style="width:100%; background:#050510; border:1px solid var(--border-dim); color:#fff; font-family:'Space Mono', monospace; font-size:10px; padding:6px; border-radius:2px;">
+          <option value="All">Complete Assembly (Consolidated)</option>
+          <option value="Base_Enclosure">1. Base Chassis &amp; Audio Transducer</option>
+          <option value="Brass_Touch_Ring">2. Spun Brass Touch Resonator</option>
+          <option value="Optical_Deck">3. Optical Separation Deck &amp; AS7341</option>
+          <option value="Quartz_Bio_Cell">4. Fused Quartz Chlorophyll Cuvette</option>
+          <option value="FMO_Chromophore_Lattice">5. 24-Node FMO Exciton Lattice</option>
+          <option value="Outer_Crystalline_Shroud">6. 3-Fold Crystalline Shroud</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Bottom Left HUD Controls -->
+    <div class="viewport-overlay" id="hud-bottom">
+      <button class="hud-btn" id="btn-audio-toggle">
+        <span id="audio-icon">▶</span> 40Hz PHONON DRONE
+      </button>
+      <button class="hud-btn active" id="btn-mode-pbr">PBR LIT</button>
+      <button class="hud-btn" id="btn-mode-resonance">RESONANCE GLOW</button>
+      <button class="hud-btn" id="btn-mode-wire">WIREFRAME</button>
+      <button class="hud-btn" id="btn-reset-cam">RESET CAMERA</button>
+    </div>
+  </div>
+
+  <!-- Right Technical Dossier Panel -->
+  <aside id="dossier-panel">
+    <nav class="dossier-tabs">
+      <button class="tab-btn active" data-tab="tab-telemetry">TELEMETRY</button>
+      <button class="tab-btn" data-tab="tab-schematics">BLUEPRINTS</button>
+      <button class="tab-btn" data-tab="tab-bom">BOM / SOURCING</button>
+      <button class="tab-btn" data-tab="tab-fabrication">FABRICATION</button>
+      <button class="tab-btn" data-tab="tab-firmware">FIRMWARE</button>
+    </nav>
+
+    <div class="dossier-content">
+      <!-- TAB 1: TELEMETRY & COMPONENT SPECS -->
+      <section class="tab-pane active" id="tab-telemetry">
+        <h2 class="dossier-title">INSPECTION HUD</h2>
+        <p class="dossier-desc">Real-time parameters derived from Fenna-Matthews-Olson biological coordinates (PDB 3ENI) and active sensor readings.</p>
+
+        <div class="spec-grid">
+          <div class="spec-card">
+            <div class="spec-label">ACTIVE SELECTION</div>
+            <div class="spec-value" id="hud-part-name">Complete Physical Assembly</div>
+            <div class="spec-sub" id="hud-part-role">200mm × 140mm pedestal installation device. Integrates living biological chlorophyll-a with solid-state multi-spectral feedback.</div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-label">BIOLOGICAL SUBSTRATE</div>
+            <div class="spec-value">FMO C3 Trimer (24 Chromophores)</div>
+            <div class="spec-sub">24 Bacteriochlorophyll-a nodes connected across 51 resonance conduits. Exciton transport simulated in real-time via 24-state Lindblad master equation.</div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-label">OPTICAL PATHWAY</div>
+            <div class="spec-value">405nm UV → 668nm Stokes Luminescence</div>
+            <div class="spec-sub">Narrow-linewidth 405nm laser excites Soret absorption band. 90° orthogonal spectrometry chamber filters excitation via OG590 barrier filter.</div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-label">HAPTIC GAMMA FREQUENCY</div>
+            <div class="spec-value">40.0 Hz Phonon Bath</div>
+            <div class="spec-sub">Dayton Audio bone-conduction exciter couples directly to the base chassis, transferring 40Hz acoustic vibrations into the listener's hands upon touching the brass ring.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <a href="./assets/models/qora_device.glb" download class="action-btn green">
+            ↓ DOWNLOAD 3D GLB
+          </a>
+          <a href="#schematics" onclick="document.querySelector('[data-tab=tab-schematics]').click()" class="action-btn">
+            VIEW BLUEPRINTS →
+          </a>
+        </div>
+      </section>
+
+      <!-- TAB 2: BLUEPRINTS & SCHEMATICS -->
+      <section class="tab-pane" id="tab-schematics">
+        <h2 class="dossier-title">ENGINEERING SCHEMATICS</h2>
+        <p class="dossier-desc">Vector schematics covering electronic architecture, optical resonance, wiring pinouts, and exploded assembly stackup. Click any diagram to inspect full-scale.</p>
+
+        <div class="schematic-box">
+          <div class="spec-label">1. SYSTEM ARCHITECTURE</div>
+          <div class="spec-value" style="font-size:12px;">Dual-Core ESP32-S3 Signal Pipeline</div>
+          <img src="./assets/schematics/system_architecture.svg" alt="System Architecture" onclick="openLightbox(this.src)">
+          <div class="spec-sub">FreeRTOS Core 0: 60 FPS Lindblad exciton matrix • Core 1: I2S 40Hz DMA audio driver.</div>
+        </div>
+
+        <div class="schematic-box">
+          <div class="spec-label">2. OPTICAL RESONANCE PATH</div>
+          <div class="spec-value" style="font-size:12px;">405nm UV Bio-Cell Fluorescence</div>
+          <img src="./assets/schematics/optical_path.svg" alt="Optical Path" onclick="openLightbox(this.src)">
+          <div class="spec-sub">90° spectrometry baffle isolates ruby fluorescence from the direct laser pump beam.</div>
+        </div>
+
+        <div class="schematic-box">
+          <div class="spec-label">3. ELECTRICAL WIRING</div>
+          <div class="spec-value" style="font-size:12px;">Microcontroller &amp; Sensor Pinouts</div>
+          <img src="./assets/schematics/wiring_diagram.svg" alt="Wiring Diagram" onclick="openLightbox(this.src)">
+          <div class="spec-sub">MAX98357A I2S DAC, AS7341 I2C, VL53L8CX ToF, and Touch T1 brass electrode.</div>
+        </div>
+
+        <div class="schematic-box">
+          <div class="spec-label">4. MECHANICAL STACKUP</div>
+          <div class="spec-value" style="font-size:12px;">Assembly Dimensions &amp; Tolerances</div>
+          <img src="./assets/schematics/mechanical_assembly.svg" alt="Mechanical Assembly" onclick="openLightbox(this.src)">
+          <div class="spec-sub">CNC base, Viton O-ring liquid isolation, and quick-release knurled crown nut.</div>
+        </div>
+      </section>
+
+      <!-- TAB 3: BILL OF MATERIALS -->
+      <section class="tab-pane" id="tab-bom">
+        <h2 class="dossier-title">BILL OF MATERIALS (BOM)</h2>
+        <p class="dossier-desc">Verified components and direct sourcing channels for producing the QORA physical device.</p>
+
+        <table class="bom-table">
+          <thead>
+            <tr>
+              <th>REF</th>
+              <th>PART</th>
+              <th>SPEC</th>
+              <th>EST.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>E01</td>
+              <td>ESP32-S3 DevKit</td>
+              <td>Dual-Core 240MHz, 16MB Flash, 8MB PSRAM</td>
+              <td class="cost">$6.50</td>
+            </tr>
+            <tr>
+              <td>E02</td>
+              <td>AS7341 Breakout</td>
+              <td>AMS 11-Channel Visible/NIR Spectrometer</td>
+              <td class="cost">$15.95</td>
+            </tr>
+            <tr>
+              <td>E03</td>
+              <td>VL53L8CX / VL53L1X</td>
+              <td>8x8 Multi-Zone Time-of-Flight Presence</td>
+              <td class="cost">$14.50</td>
+            </tr>
+            <tr>
+              <td>E04</td>
+              <td>MAX98357A DAC</td>
+              <td>3.2W I2S Class D Mono Audio Amplifier</td>
+              <td class="cost">$5.95</td>
+            </tr>
+            <tr>
+              <td>E05</td>
+              <td>Dayton DAEX25FHE-4</td>
+              <td>4Ω 24W Tactile Bone-Conduction Exciter</td>
+              <td class="cost">$11.50</td>
+            </tr>
+            <tr>
+              <td>E06</td>
+              <td>SK6812 Mini-3535</td>
+              <td>24x Addressable RGBW Micro Optical Emitters</td>
+              <td class="cost">$7.00</td>
+            </tr>
+            <tr>
+              <td>E07</td>
+              <td>405nm Laser Diode</td>
+              <td>100mW Violet Focusable Laser Module</td>
+              <td class="cost">$12.00</td>
+            </tr>
+            <tr>
+              <td>O01</td>
+              <td>Quartz Bio-Cuvette</td>
+              <td>Fused Quartz JGS1 (Ø25mm OD × 95mm H)</td>
+              <td class="cost">$22.00</td>
+            </tr>
+            <tr>
+              <td>O02</td>
+              <td>OG590 Cutoff Filter</td>
+              <td>Schott 590nm Longpass Barrier (Ø15mm)</td>
+              <td class="cost">$18.00</td>
+            </tr>
+            <tr>
+              <td>O03</td>
+              <td>PMMA Light Guides</td>
+              <td>24x Ø1.0mm End-Glow Optical Fibers</td>
+              <td class="cost">$8.00</td>
+            </tr>
+            <tr>
+              <td>M01</td>
+              <td>Base Chassis</td>
+              <td>CNC 6061-T6 Black Anodized / PETG-CF</td>
+              <td class="cost">$25.00</td>
+            </tr>
+            <tr>
+              <td>M02</td>
+              <td>Spun Brass Touch Ring</td>
+              <td>C36000 Solid Architectural Brass</td>
+              <td class="cost">$18.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="spec-card" style="margin-top:10px;">
+          <div class="spec-label">ESTIMATED PRODUCTION BUDGET</div>
+          <div class="spec-value" style="color:var(--accent-gold);">$150 – $180 USD (DIY 3D Print) / $250 – $290 (Museum CNC)</div>
+        </div>
+      </section>
+
+      <!-- TAB 4: FABRICATION GUIDE -->
+      <section class="tab-pane" id="tab-fabrication">
+        <h2 class="dossier-title">FABRICATION &amp; BIO-PREPARATION</h2>
+        <p class="dossier-desc">Manufacturing instructions, 3D printing parameters, and living chlorophyll extraction protocol.</p>
+
+        <div class="spec-label" style="margin-top:14px; margin-bottom:6px;">1. 3D PRINTING STL PACK</div>
+        <p class="spec-sub" style="margin-bottom:12px;">Download manufacturing-ready watertight STL files for SLA and FDM 3D printing:</p>
+
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+          <a href="./assets/stl/qora_fmo_chromophore_lattice.stl" download class="action-btn">↓ FMO Lattice (.STL)</a>
+          <a href="./assets/stl/qora_base_enclosure.stl" download class="action-btn">↓ Base Chassis (.STL)</a>
+          <a href="./assets/stl/qora_brass_touch_ring.stl" download class="action-btn">↓ Touch Ring (.STL)</a>
+          <a href="./assets/stl/qora_optical_deck.stl" download class="action-btn">↓ Optical Deck (.STL)</a>
+          <a href="./assets/stl/qora_outer_crystalline_shroud.stl" download class="action-btn">↓ Outer Shroud (.STL)</a>
+          <a href="./assets/stl/qora_quartz_bio_cell.stl" download class="action-btn">↓ Quartz Cell (.STL)</a>
+        </div>
+
+        <div class="spec-label" style="margin-top:14px; margin-bottom:6px;">2. LIVING CHLOROPHYLL-A EXTRACTION</div>
+        <div class="spec-card" style="margin-bottom:16px;">
+          <div class="spec-sub" style="color:#f0f4f8; margin-bottom:8px;"><strong>Simple Protocol (High Fluorescence Yield):</strong></div>
+          <ol style="font-size:11px; line-height:1.6; color:var(--text-muted); padding-left:18px;">
+            <li>Macerate 20g fresh organic baby spinach or Spirulina powder in a mortar with 50mL of 80% food-grade ethanol or pure vegetable glycerin.</li>
+            <li>Filter through a 0.2µm PTFE syringe filter to obtain a particle-free, optical-grade solution.</li>
+            <li>Under standard light, the fluid is emerald green. When the 405nm violet beam passes through, it emits intense ruby-red fluorescence at 668nm.</li>
+            <li>Pour into the quartz cuvette, seal with Viton O-rings, and tighten the knurled top crown nut.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- TAB 5: FIRMWARE -->
+      <section class="tab-pane" id="tab-firmware">
+        <h2 class="dossier-title">ESP32-S3 CORE FIRMWARE</h2>
+        <p class="dossier-desc">Multi-threaded FreeRTOS firmware running the 24-state Lindblad exciton dynamics at 60 FPS on Core 0 and the 40Hz I2S phonon audio synth on Core 1.</p>
+
+        <a href="./firmware/qora_core_firmware.ino" download class="action-btn green" style="margin-bottom:14px;">
+          ↓ DOWNLOAD FIRMWARE (.INO)
+        </a>
+
+        <pre class="code-block">/*
+ * QORA-1 — Quantum Organic Resonance Apparatus
+ * Hardware Configuration:
+ * - ESP32-S3 (Dual-Core LX7 @ 240MHz)
+ * - AS7341 11-Channel Spectrometer (I2C 0x39)
+ * - VL53L8CX 8x8 ToF Presence Matrix
+ * - MAX98357A I2S DAC driving Dayton 40Hz Exciter
+ * - 24x SK6812 RGBW Optical Chromophore Nodes
+ */
+
+#include &lt;Arduino.h&gt;
+#include &lt;Wire.h&gt;
+#include &lt;Adafruit_NeoPixel.h&gt;
+#include &lt;driver/i2s.h&gt;
+
+// Pinned Tasks:
+// Core 0: 60 FPS Quantum Lindblad Simulation
+// Core 1: 44.1kHz DMA I2S 40Hz Phonon Synthesizer
+void setup() {
+  init_i2s();
+  xTaskCreatePinnedToCore(task_audio_engine, "Audio", 4096, NULL, 2, NULL, 1);
+  xTaskCreatePinnedToCore(task_quantum_sim, "Quantum", 8192, NULL, 1, NULL, 0);
+}</pre>
+      </section>
+    </div>
+  </aside>
+</div>
+
+<!-- Modal Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <span id="lightbox-close">✕ CLOSE</span>
+  <img id="lightbox-img" src="" alt="Schematic Inspection">
+</div>
+
+<!-- Three.js + App Script -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// ─── Scene, Camera, Renderer Setup ──────────────────────────────
+const container = document.getElementById('viewport');
+const canvas = document.getElementById('webgl-canvas');
+const width = container.clientWidth;
+const height = container.clientHeight;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x050510, 0.002);
+
+const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
+camera.position.set(220, 160, 260);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.target.set(0, 50, 0);
+controls.maxDistance = 600;
+controls.minDistance = 60;
+
+// ─── Lighting ───────────────────────────────────────────────────
+const ambientLight = new THREE.AmbientLight(0x1a2035, 1.2);
+scene.add(ambientLight);
+
+const dirLight1 = new THREE.DirectionalLight(0xcce5ff, 2.0);
+dirLight1.position.set(150, 250, 150);
+scene.add(dirLight1);
+
+const dirLight2 = new THREE.DirectionalLight(0x7b61ff, 1.2);
+dirLight2.position.set(-150, 100, -150);
+scene.add(dirLight2);
+
+// Internal laser beam glow point light
+const laserLight = new THREE.PointLight(0x781eb4, 2.5, 120);
+laserLight.position.set(0, 45, 0);
+scene.add(laserLight);
+
+// ─── Model Loading & Exploded Assembly Tracking ────────────────
+let modelRoot = null;
+const subassemblies = {};
+const initialPositions = {};
+
+const loader = new GLTFLoader();
+loader.load('./assets/models/qora_device.glb', (gltf) => {
+  modelRoot = gltf.scene;
+  scene.add(modelRoot);
+
+  modelRoot.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+      subassemblies[child.name] = child;
+      initialPositions[child.name] = child.position.clone();
+    }
+  });
+
+  window.deviceLoaded = true;
+}, undefined, (err) => {
+  console.error("GLTF load error:", err);
+});
+
+// Exploded displacement vectors (Y-axis separation)
+const explosionDisplacements = {
+  'Outer_Crystalline_Shroud': 90,
+  'FMO_Chromophore_Lattice': 50,
+  'Quartz_Bio_Cell': 25,
+  'Optical_Deck': 0,
+  'Brass_Touch_Ring': -20,
+  'Base_Enclosure': -50
+};
+
+// ─── Interaction & UI State ─────────────────────────────────────
+let explodedProgress = 0.0;
+let observerDistance = 2.5; // meters
+let isCollapsed = false;
+let renderMode = 'pbr'; // 'pbr', 'resonance', 'wire'
+
+const sliderExploded = document.getElementById('slider-exploded');
+const sliderObserver = document.getElementById('slider-observer');
+const textExploded = document.getElementById('val-exploded-text');
+const textObserver = document.getElementById('val-observer-text');
+const coherenceValDisplay = document.getElementById('coherence-val-display');
+const statusTagDisplay = document.getElementById('status-tag-display');
+const coherenceFillBar = document.getElementById('coherence-fill-bar');
+const selectFocus = document.getElementById('select-focus-part');
+
+sliderExploded.addEventListener('input', (e) => {
+  explodedProgress = parseFloat(e.target.value) / 100.0;
+  textExploded.textContent = `${Math.round(explodedProgress * 100)}%`;
+  applyExplodedPositions();
+});
+
+sliderObserver.addEventListener('input', (e) => {
+  observerDistance = parseFloat(e.target.value) / 100.0;
+  textObserver.textContent = `${observerDistance.toFixed(2)} m`;
+});
+
+function applyExplodedPositions() {
+  for (const name in subassemblies) {
+    const mesh = subassemblies[name];
+    const initialPos = initialPositions[name];
+    if (mesh && initialPos) {
+      const deltaY = (explosionDisplacements[name] || 0) * explodedProgress;
+      mesh.position.y = initialPos.y + deltaY;
+    }
+  }
+}
+
+// Subassembly Focus Inspector
+const PART_DESCRIPTIONS = {
+  'All': {
+    name: 'Complete Physical Assembly',
+    role: '200mm × 140mm pedestal installation device. Integrates living biological chlorophyll-a with solid-state multi-spectral feedback.'
+  },
+  'Base_Enclosure': {
+    name: 'Base Chassis & Acoustic Engine',
+    role: 'Houses the ESP32-S3 compute core, MAX98357A I2S DAC, and 24W Dayton Audio exciter that resonates the structure at 40Hz.'
+  },
+  'Brass_Touch_Ring': {
+    name: 'Spun Brass Touch Resonator',
+    role: 'Mirror-polished C36000 brass ring. Serves as a tactile grounding contact wired to ESP32 Touch Pin T1 to trigger observer decoherence.'
+  },
+  'Optical_Deck': {
+    name: 'Optical Separation Deck',
+    role: 'Anodized optical barrier isolating the 24 micro-LED fiber heads, mounting the AMS AS7341 11-channel spectrometer at a 90° angle.'
+  },
+  'Quartz_Bio_Cell': {
+    name: 'Fused Quartz Bio-Cuvette (JGS1)',
+    role: 'Ø25mm × 95mm optical quartz vessel holding living chlorophyll-a extract, sealed with Viton O-rings.'
+  },
+  'FMO_Chromophore_Lattice': {
+    name: '24-Node FMO Exciton Scaffold',
+    role: 'Parametric crystal lattice reproducing the exact C3 trimer symmetry of PDB 3ENI with 51 dipole-dipole quantum coupling conduits.'
+  },
+  'Outer_Crystalline_Shroud': {
+    name: '3-Fold Crystalline Shroud',
+    role: 'Optically clear protective shroud guarding the biological cuvette while allowing laser fluorescence to scatter outward.'
+  }
+};
+
+selectFocus.addEventListener('change', (e) => {
+  const selected = e.target.value;
+  const info = PART_DESCRIPTIONS[selected] || PART_DESCRIPTIONS['All'];
+  document.getElementById('hud-part-name').textContent = info.name;
+  document.getElementById('hud-part-role').textContent = info.role;
+
+  // Highlight or solo
+  for (const name in subassemblies) {
+    const mesh = subassemblies[name];
+    if (selected === 'All' || name === selected) {
+      mesh.visible = true;
+    } else {
+      mesh.visible = false;
+    }
+  }
+});
+
+// Render Mode Toggles
+const btnPbr = document.getElementById('btn-mode-pbr');
+const btnRes = document.getElementById('btn-mode-resonance');
+const btnWire = document.getElementById('btn-mode-wire');
+
+btnPbr.addEventListener('click', () => setRenderMode('pbr'));
+btnRes.addEventListener('click', () => setRenderMode('resonance'));
+btnWire.addEventListener('click', () => setRenderMode('wire'));
+
+function setRenderMode(mode) {
+  renderMode = mode;
+  [btnPbr, btnRes, btnWire].forEach(b => b.classList.remove('active'));
+  if (mode === 'pbr') btnPbr.classList.add('active');
+  if (mode === 'resonance') btnRes.classList.add('active');
+  if (mode === 'wire') btnWire.classList.add('active');
+
+  for (const name in subassemblies) {
+    const mesh = subassemblies[name];
+    if (mesh && mesh.material) {
+      mesh.material.wireframe = (mode === 'wire');
+      if (mode === 'resonance') {
+        mesh.material.emissiveIntensity = name.includes('Lattice') ? 2.5 : 0.2;
+      } else {
+        mesh.material.emissiveIntensity = 0.5;
+      }
+    }
+  }
+}
+
+// Reset Camera
+document.getElementById('btn-reset-cam').addEventListener('click', () => {
+  camera.position.set(220, 160, 260);
+  controls.target.set(0, 50, 0);
+});
+
+// ─── Web Audio API 40Hz Phonon Synthesizer ──────────────────────
+let audioCtx = null;
+let osc40Hz = null;
+let gainNode = null;
+let isAudioPlaying = false;
+
+document.getElementById('btn-audio-toggle').addEventListener('click', () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    osc40Hz = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
+
+    osc40Hz.type = 'sine';
+    osc40Hz.frequency.setValueAtTime(40, audioCtx.currentTime); // 40Hz Gamma
+    gainNode.gain.setValueAtTime(0.0, audioCtx.currentTime);
+
+    osc40Hz.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc40Hz.start();
+  }
+
+  if (isAudioPlaying) {
+    gainNode.gain.setTargetAtTime(0.0, audioCtx.currentTime, 0.1);
+    document.getElementById('btn-audio-toggle').classList.remove('active');
+    document.getElementById('audio-icon').textContent = '▶';
+    isAudioPlaying = false;
+  } else {
+    gainNode.gain.setTargetAtTime(0.25, audioCtx.currentTime, 0.1);
+    document.getElementById('btn-audio-toggle').classList.add('active');
+    document.getElementById('audio-icon').textContent = '■';
+    isAudioPlaying = true;
+  }
+});
+
+// ─── Dossier Tab Navigation ─────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const targetId = btn.getAttribute('data-tab');
+    document.getElementById(targetId).classList.add('active');
+  });
+});
+
+// Lightbox Modal
+window.openLightbox = (src) => {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('active');
+};
+window.closeLightbox = () => {
+  document.getElementById('lightbox').classList.remove('active');
+};
+
+// ─── Animation Loop ─────────────────────────────────────────────
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const elapsedTime = clock.getElapsedTime();
+
+  // Quantum Coherence calculation
+  const normalizedDist = Math.max(0.0, Math.min(1.0, (observerDistance - 0.2) / 2.3));
+  const coherence = Math.pow(normalizedDist, 0.75);
+  const cohPct = Math.round(coherence * 100);
+
+  coherenceValDisplay.textContent = `${cohPct}%`;
+  coherenceFillBar.style.width = `${cohPct}%`;
+
+  if (coherence < 0.35) {
+    isCollapsed = true;
+    statusTagDisplay.textContent = 'OBSERVER COLLAPSE';
+    statusTagDisplay.className = 'status-tag collapsed';
+    coherenceValDisplay.style.color = 'var(--accent-ruby)';
+    coherenceFillBar.style.backgroundColor = 'var(--accent-ruby)';
+  } else {
+    isCollapsed = false;
+    statusTagDisplay.textContent = 'COHERENT';
+    statusTagDisplay.className = 'status-tag';
+    coherenceValDisplay.style.color = 'var(--accent-cyan)';
+    coherenceFillBar.style.backgroundColor = 'var(--accent-cyan)';
+  }
+
+  // Modulate 40Hz audio harmonics if active
+  if (isAudioPlaying && osc40Hz) {
+    if (isCollapsed) {
+      // Shift frequency upward with chaotic tremor
+      const jitter = Math.sin(elapsedTime * 30.0) * 8.0;
+      osc40Hz.frequency.setValueAtTime(40 + jitter + (1.0 - coherence) * 60, audioCtx.currentTime);
+    } else {
+      osc40Hz.frequency.setValueAtTime(40.0, audioCtx.currentTime);
+    }
+  }
+
+  // Gentle idle rotation of model
+  if (modelRoot && explodedProgress === 0.0) {
+    modelRoot.rotation.y = elapsedTime * 0.15;
+  }
+
+  // Pulse FMO lattice nodes
+  const lattice = subassemblies['FMO_Chromophore_Lattice'];
+  if (lattice && lattice.material) {
+    if (isCollapsed) {
+      // Chaotic ruby flicker
+      const flick = 0.5 + 0.5 * Math.sin(elapsedTime * 25.0);
+      lattice.material.emissive.setRGB(0.9 * flick, 0.05, 0.2);
+    } else {
+      // Pure coherent emerald wave
+      const pulse = 0.5 + 0.5 * Math.sin(elapsedTime * 2.5);
+      lattice.material.emissive.setRGB(0.0, 0.9 * pulse, 0.6 * pulse);
+    }
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Window Resize Handling
+window.addEventListener('resize', () => {
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 900" width="1000" height="900" style="background:#0a0c10; font-family:'JetBrains Mono', sans-serif;">
+  <text x="40" y="45" fill="#00e5a0" font-size="18" font-weight="bold">QORA-1 MECHANICAL EXPLODED ASSEMBLY</text>
+  <text x="40" y="70" fill="#8b949e" font-size="11">STACKUP DIMENSIONS, FABRICATION TOLERANCES &amp; FASTENERS</text>
+
+  <g transform="translate(380, 100)">
+    <!-- 1. Crown Ring / Nut -->
+    <g transform="translate(0, 30)">
+      <ellipse cx="0" cy="0" rx="35" ry="12" fill="#d29922" stroke="#ffffff" stroke-width="1"/>
+      <text x="80" y="5" fill="#d29922" font-size="11">1. Spun Brass Top Crown (M3 Knurled Nut)</text>
+    </g>
+
+    <!-- 2. Outer Shroud -->
+    <g transform="translate(0, 110)">
+      <ellipse cx="0" cy="0" rx="95" ry="24" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      <path d="M -90 0 L -80 120 M 90 0 L 80 120 M 0 20 L 0 130" stroke="#58a6ff" stroke-width="2" stroke-dasharray="2,2"/>
+      <ellipse cx="0" cy="120" rx="85" ry="20" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="120" y="50" fill="#58a6ff" font-size="11">2. Outer Protective Shroud (SLA Clear Resin)</text>
+    </g>
+
+    <!-- 3. FMO 24-Chromophore Lattice -->
+    <g transform="translate(0, 260)">
+      <ellipse cx="0" cy="0" rx="75" ry="20" fill="none" stroke="#00e5a0" stroke-width="2"/>
+      <!-- Internal nodes -->
+      <circle cx="-40" cy="-5" r="7" fill="#00e5a0"/>
+      <circle cx="35" cy="-8" r="7" fill="#00e5a0"/>
+      <circle cx="10" cy="12" r="7" fill="#00e5a0"/>
+      <line x1="-40" y1="-5" x2="10" y2="12" stroke="#00e5a0" stroke-width="1.5"/>
+      <line x1="35" y1="-8" x2="10" y2="12" stroke="#00e5a0" stroke-width="1.5"/>
+      <text x="100" y="10" fill="#00e5a0" font-size="11">3. FMO 24-BCL Resonator Cage (3D STL, PDB 3ENI)</text>
+    </g>
+
+    <!-- 4. Quartz Bio-Cell -->
+    <g transform="translate(0, 370)">
+      <rect x="-14" y="-30" width="28" height="80" rx="4" fill="#0d2820" stroke="#2ea043" stroke-width="1.5"/>
+      <text x="80" y="15" fill="#2ea043" font-size="11">4. Optical Quartz Bio-Vial (25mm x 95mm)</text>
+    </g>
+
+    <!-- 5. Optical Separation Deck & AS7341 Cradle -->
+    <g transform="translate(0, 480)">
+      <ellipse cx="0" cy="0" rx="92" ry="22" fill="#21262d" stroke="#8b949e" stroke-width="1.5"/>
+      <rect x="25" y="-12" width="22" height="15" fill="#388bfd" stroke="#ffffff" stroke-width="1"/>
+      <text x="110" y="5" fill="#c9d1d9" font-size="11">5. Optical Deck + AS7341 Cradle + Silicone Isolators</text>
+    </g>
+
+    <!-- 6. 24-LED Base Illuminator Ring -->
+    <g transform="translate(0, 540)">
+      <ellipse cx="0" cy="0" rx="70" ry="18" fill="none" stroke="#e3b341" stroke-width="2" stroke-dasharray="4,6"/>
+      <text x="90" y="5" fill="#e3b341" font-size="11">6. 24-LED Micro-Optical Emitter Ring (SK6812)</text>
+    </g>
+
+    <!-- 7. Base Enclosure & Transducer -->
+    <g transform="translate(0, 620)">
+      <ellipse cx="0" cy="0" rx="100" ry="25" fill="#161b22" stroke="#ffffff" stroke-width="1.5"/>
+      <path d="M -100 0 L -100 45 A 100 25 0 0 0 100 45 L 100 0" fill="#161b22" stroke="#ffffff" stroke-width="1.5"/>
+      <!-- Dayton Transducer inside -->
+      <ellipse cx="0" cy="20" rx="30" ry="8" fill="#f0883e"/>
+      <text x="120" y="25" fill="#f0883e" font-size="11">7. Dayton DAEX25 Tactile Transducer</text>
+      <text x="120" y="45" fill="#8b949e" font-size="11">8. Base Chassis (CNC Anodized Aluminum 6061 / PETG)</text>
+    </g>
+
+    <!-- Central Alignment Axis -->
+    <line x1="0" y1="10" x2="0" y2="670" stroke="#ff0055" stroke-width="1" stroke-dasharray="6,4" opacity="0.6"/>
+  </g>
+</svg>

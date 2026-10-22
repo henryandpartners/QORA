@@ -37,6 +37,7 @@
   <div>R — Enlightenment Ritual</div>
   <div>C — Spectrum</div>
   <div>I — The Organism</div>
+  <div>D — Physical Apparatus</div>
   <div>F — Fullscreen</div>
 </div>
 
@@ -45,6 +46,7 @@
   <button class="qora-menu-btn accent" id="qora-btn-ritual">R — ENLIGHTENMENT RITUAL</button>
   <button class="qora-menu-btn spectrum" id="qora-btn-spectrum">C — SPECTRUM</button>
   <button class="qora-menu-btn about" id="qora-btn-about">I — THE ORGANISM</button>
+  <a href="device.html" class="qora-menu-btn device" id="qora-btn-device">D — PHYSICAL APPARATUS</a>
 </div>
 
 <script type="importmap">
@@ -70,6 +72,11 @@ document.getElementById('qora-btn-ritual').addEventListener('click', () => {
 });
 document.getElementById('qora-btn-spectrum').addEventListener('click', () => togglePanel());
 document.getElementById('qora-btn-about').addEventListener('click', () => toggleAbout());
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyD' && !e.ctrlKey && !e.metaKey && !e.altKey && document.activeElement.tagName !== 'INPUT') {
+    window.location.href = 'device.html';
+  }
+});
 </script>
 </body>
 </html>
